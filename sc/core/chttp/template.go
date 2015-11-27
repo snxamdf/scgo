@@ -9,7 +9,6 @@ import (
 var temp = template.Template{}
 
 func (c *Context) HTML(name string, data interface{}) error {
-	//t := template.New("temp")
 	t, err := template.ParseFiles(name)
 	if err != nil {
 		fmt.Println(err)
