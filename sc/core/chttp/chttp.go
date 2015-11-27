@@ -13,14 +13,16 @@ type Context struct {
 	Params   url.Values
 }
 
+type action map[string]func(Context)
+
 type Handle struct {
-	action      map[string]func(Context)
+	action      action
 	permissions []string
 	method      string
 }
 
 var handle = &Handle{
-	action: make(map[string]func(Context)),
+	action: make(action),
 }
 
 func (me *Handle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
