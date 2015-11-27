@@ -1,5 +1,7 @@
 package chttp
 
+type action map[string]func(Context)
+
 func Action(url string, actionMethod func(Context)) {
 	handle.action[url] = actionMethod
 }

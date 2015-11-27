@@ -13,8 +13,6 @@ type Context struct {
 	Params   url.Values
 }
 
-type action map[string]func(Context)
-
 type Handle struct {
 	action      action
 	permissions []string
