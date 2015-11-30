@@ -1,23 +1,28 @@
 package chttp
 
-type action map[string]func(Context)
-
-func Action(url string, actionMethod func(Context)) {
-	handle.action[url] = actionMethod
+func Action(url string, actionMethod func(Context)) *curl {
+	if route.action == nil {
+		route.action = make(map[string]*curl)
+	}
+	ml := &curl{
+		mfunc:  actionMethod,
+		method: method{ALL},
+	}
+	route.action[url] = ml
+	return ml
 }
 
-func Action1(url string, actionMethod func(Context), permissions []string) {
-	handle.action[url] = actionMethod
-	handle.permissions = permissions
+func (this *curl) Get() *curl {
+	this.method = method{GET}
+	return this
 }
 
-func Action2(url string, actionMethod func(Context), method string) {
-	handle.action[url] = actionMethod
-	handle.method = method
+func (this *curl) Post() *curl {
+	this.method = method{POST}
+	return this
 }
 
-func Action3(url string, actionMethod func(Context), permissions []string, method string) {
-	handle.action[url] = actionMethod
-	handle.permissions = permissions
-	handle.method = method
+func (this *curl) Permission(permissions ...string) *curl {
+	this.permissions = permissions
+	return this
 }
