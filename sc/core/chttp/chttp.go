@@ -38,6 +38,7 @@ var route = &Route{
 
 //实现ServeHTTP
 func (this *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	//如果有错误就恢复 并跳转到错误页面
 	defer func() {
 		if err := recover(); err != nil {
 			log.Fatal(err)
@@ -67,7 +68,7 @@ func (this *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if murl, ok := this.action[url]; ok { //请求url判断
 		if murl.method.method == ALL || murl.method.method == r.Method { //请求方式判断
-			//判断是否设置了url权限
+			//判断Action Url是否设置了url权限
 			if murl.permissions != nil && len(murl.permissions) > 0 {
 
 			} else {

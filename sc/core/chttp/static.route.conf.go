@@ -9,15 +9,20 @@ type Config struct {
 	Port     string    //服务商品
 	Error404 ErrorPage //404错误页面
 	Error500 ErrorPage //500错误页面
+	Template Template  //html模版
 }
 
 type Mapping struct {
-	Dir    string
-	Prefix string
-	Ext    []string
+	Dir    string   //所在目录
+	Prefix string   //请求url
+	Ext    []string //文件扩展名
 }
 
 type ErrorPage struct {
-	Url     string ""
-	Message string ""
+	Url     string "" //页面路径
+	Message string "" //返回错误信息
+}
+
+type Template struct {
+	Dir string "template" //模版所在根目录
 }
