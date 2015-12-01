@@ -9,14 +9,10 @@ import (
 
 type action map[string]*curl
 
-type method struct {
-	method string
-}
-
 type curl struct {
 	permissions []string
 	mfunc       func(Context)
-	method      method
+	method      string
 }
 
 //路由
@@ -60,7 +56,7 @@ func (this *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		htmlRoute.ServeHTTP(w, r)
 		return
 	} else if murl, ok := this.action[url]; ok { //请求url判断
-		if murl.method.method == ALL || murl.method.method == r.Method { //请求方式判断
+		if murl.method == ALL || murl.method == r.Method { //请求方式判断
 			//判断Action Url是否设置了url权限
 			if murl.permissions != nil && len(murl.permissions) > 0 {
 

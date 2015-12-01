@@ -6,19 +6,19 @@ func Action(url string, actionMethod func(Context)) *curl {
 	}
 	ml := &curl{
 		mfunc:  actionMethod,
-		method: method{ALL},
+		method: ALL,
 	}
 	route.action[url] = ml
 	return ml
 }
 
 func (this *curl) Get() *curl {
-	this.method = method{GET}
+	this.method = GET
 	return this
 }
 
 func (this *curl) Post() *curl {
-	this.method = method{POST}
+	this.method = POST
 	return this
 }
 
