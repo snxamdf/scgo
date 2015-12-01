@@ -32,8 +32,8 @@ func (this *Integer) SetValue(value string) {
 	}
 }
 
-func (this *Integer) Value() string {
-	return strconv.Itoa(this.value)
+func (this *Integer) Value() int {
+	return this.value
 }
 
 func (this *String) Value() string {

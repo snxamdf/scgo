@@ -3,11 +3,12 @@ Description
 
 README.md
 
-���������
+服务端配置
 
-actionӳ��
+action映射
 
-Ȩ������
+权限配置
+错误配置
 
-��������
-
+实体数据绑定
+实体值获取
