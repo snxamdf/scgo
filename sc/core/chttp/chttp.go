@@ -41,7 +41,7 @@ func (this *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//如果有错误就恢复 并跳转到错误页面
 	defer func() {
 		if err := recover(); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 			this.Error500(w, r)
 		}
 	}()
@@ -74,7 +74,7 @@ func (this *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			} else {
 				c, err := this.Context(w, r)
 				if err != nil {
-					fmt.Errorf(err.Error())
+					log.Println(err)
 				}
 				murl.mfunc(c) //调用函数
 			}
@@ -86,7 +86,7 @@ func (this *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//404 error
+//500 error
 func (*Route) Error500(w http.ResponseWriter, r *http.Request) {
 	if Conf.Error500.Url != "" {
 		http.Redirect(w, r, Conf.Error500.Url, http.StatusFound)
