@@ -1,1 +1,1 @@
-package scgen
+package main

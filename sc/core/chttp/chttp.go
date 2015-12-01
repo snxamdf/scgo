@@ -150,6 +150,6 @@ func (*Route) Context(w http.ResponseWriter, r *http.Request) (Context, error) {
 func Run() {
 	err := http.ListenAndServe(Conf.Port, route)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
