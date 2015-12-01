@@ -4,19 +4,23 @@ import (
 	"strconv"
 )
 
-type Entity interface {
+//实体接口
+type EntityField interface {
 	SetValue(value string)
 	Value()
 }
 
-type Interface interface {
+//实体
+type EntityInterface interface {
 	SetValue(filed, value string)
 }
 
+//字符串类型
 type String struct {
 	value string
 }
 
+//整型类型
 type Integer struct {
 	value int
 }
