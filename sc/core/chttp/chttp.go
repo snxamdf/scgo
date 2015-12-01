@@ -1,7 +1,6 @@
 package chttp
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,12 +17,6 @@ type curl struct {
 	permissions []string
 	mfunc       func(Context)
 	method      method
-}
-
-type Context struct {
-	Response http.ResponseWriter
-	Request  *http.Request
-	Params   url.Values
 }
 
 //路由
@@ -140,7 +133,7 @@ func (*Route) Context(w http.ResponseWriter, r *http.Request) (Context, error) {
 	values := url.Values{}
 	err := r.ParseForm()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return Context{}, err
 	}
 	if r.Method == GET {
@@ -148,6 +141,7 @@ func (*Route) Context(w http.ResponseWriter, r *http.Request) (Context, error) {
 	} else {
 		values = r.PostForm
 	}
+
 	c := Context{
 		Response: w,
 		Request:  r,
