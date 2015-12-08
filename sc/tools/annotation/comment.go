@@ -6,45 +6,56 @@ import (
 	"strings"
 )
 
-//注解
-type Annotation struct {
-	column  *Column
-	identif *Identif
+//实体映射表
+type BeanToTable struct {
+	Table *Table //表信息
 }
 
-//唯一标识
-type Identif struct {
-	value   string
-	whether bool
+//表
+type Table struct {
+	Name    string    //表名
+	Columns *[]Column //列信息
 }
 
 //表->列
 type Column struct {
-	value   string
-	whether bool
+	Name    string //列名
+	Identif bool   //是否唯一标识
 }
 
-var reg = regexp.MustCompile(`(go:@)|([a-zA-Z]+)`) //=[go:@ column value id]
+var regComment = regexp.MustCompile(`(go:@)|([a-zA-Z]+)`) //=[go:@ column value id]
 
-func (this *Annotation) ColumnAnnota(comments []*ast.Comment) {
-	for _, comment := range comments { //遍历当前字段的注解
-		comm := strings.Replace(comment.Text, "//", "", 2)
-		annot := reg.FindAllString(comm, -1)
-		//fmt.Println(comments)
-		if annot[0] == "go:@" {
-			switch annot[1] {
-			case "identif":
-				this.identif = &Identif{"identif", true}
-				break
-			case "column":
-				this.column = &Column{annot[3], true}
-				break
-			default:
+func (this *BeanToTable) ToColumn(fields []*ast.Field) {
+	columns := []Column{}
+	for _, field := range fields { //遍历字段
+		comments := field.Doc.List //当前字段注解
+		column := Column{}
+		for _, comment := range comments { //遍历当前字段的注解
+			comm := strings.Replace(comment.Text, "//", "", 2)
+			annot := regComment.FindAllString(comm, -1)
+			if annot[0] == "go:@" {
+				switch annot[1] {
+				case "identif":
+					column.Identif = true
+					break
+				case "column":
+					column.Name = annot[3]
+					break
+				}
 			}
 		}
+		columns = append(columns, column)
 	}
-
+	this.Table.Columns = &columns
 }
 
-func (this *Annotation) TableAnnota() {
+func (this *BeanToTable) ToTable(comment string) {
+	annot := regComment.FindAllString(comment, -1)
+	if annot[0] == "go:@" {
+		switch annot[1] {
+		case "table":
+			this.Table = &Table{Name: annot[3]}
+			break
+		}
+	}
 }
