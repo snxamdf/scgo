@@ -8,6 +8,7 @@ import (
 
 //`orm:"column=text,valit=isnotnull"`
 var regOrm = regexp.MustCompile(`(orm:)|([a-zA-Z]+=[a-zA-Z]+)`)
+var regOrmKeyVal = regexp.MustCompile(`([a-zA-Z]+=[a-zA-Z]+)`)
 
 //`orm:""` 映射
 type Orm struct {
@@ -20,7 +21,12 @@ func (this *Orm) ToOrm(fields []*ast.Field) {
 
 		//fmt.Printf("%+v\n", field.Tag) //取得 `orm:""`
 		orms := regOrm.FindAllString(tag.Value, -1)
-
-		fmt.Println(orms, len(orms))
+		if orms[0] == "orm:" {
+			fmt.Println(orms, len(orms))
+			for _, v := range orms {
+				keyVals := regOrmKeyVal.FindAllString(v, -1)
+				fmt.Println(keyVals)
+			}
+		}
 	}
 }

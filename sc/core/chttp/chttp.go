@@ -148,6 +148,7 @@ func (*Route) Context(w http.ResponseWriter, r *http.Request) (Context, error) {
 
 //运行服务
 func Run() {
+	log.Println("Listening and serving HTTP on :", Conf.Port)
 	err := http.ListenAndServe(Conf.Port, route)
 	if err != nil {
 		log.Println(err)
