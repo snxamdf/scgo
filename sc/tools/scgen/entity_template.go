@@ -6,7 +6,6 @@ package entity
 import (
 	"bytes"
 	"fmt"
-	"strings"
 )
 
 func New{{.Bean.Name}}() *Users {
@@ -15,10 +14,10 @@ func New{{.Bean.Name}}() *Users {
 
 func (this *{{.Bean.Name}}) SetValue(filed, value string) {
 	switch filed {
-		{{range $bean:=.Bean.Fileld}}case "{{lower $bean.Name}}":
-			this.{{$bean.Name}}.SetValue(value)
+	{{range $bean:=.Bean.Fileld}}case "{{lower $bean.Name}}":
+		this.{{$bean.Name}}.SetValue(value)
 		break
-		{{end}}
+	{{end}}
 	}
 }
 

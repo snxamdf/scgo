@@ -60,8 +60,8 @@ func main() {
 	//fmt.Printf("%+v\n", annot.Table.Columns)
 	//fmt.Println(err, f.Name.Name, f.Decls)
 	//fmt.Printf("%+v\n", f)
-	temple := newTmpl(entityTemp)
-	temple.Execute(os.Stdout, annot)
+	genEntity("test.go", annot)                  //生成实体实现类
+	genAction("../action/action_test.go", annot) //生成实体实现类
 }
 
 func newTmpl(s string) *template.Template {
