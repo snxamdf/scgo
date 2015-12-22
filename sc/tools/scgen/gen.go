@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"scgo/sc/tools/annotation"
+	"text/template"
 )
 
 //生成实体实现类 impl_entity_user.go
@@ -35,4 +36,8 @@ func genAction(path string, annot annotation.BeanToTable) {
 	temple.Execute(&buf, annot)
 	n, err := fout.Write(buf.Bytes())
 	fmt.Println(n, err)
+}
+
+func newTmpl(s string) *template.Template {
+	return template.Must(template.New("T").Funcs(funcmap).Parse(s))
 }

@@ -10,7 +10,6 @@ import (
 	"os"
 	"scgo/sc/tools/annotation"
 	//"scgo/sc/tools/scorm"
-	"text/template"
 )
 
 func main() {
@@ -60,10 +59,6 @@ func main() {
 	//fmt.Printf("%+v\n", annot.Table.Columns)
 	//fmt.Println(err, f.Name.Name, f.Decls)
 	//fmt.Printf("%+v\n", f)
-	genEntity("test.go", annot)                  //生成实体实现类
-	genAction("../action/action_test.go", annot) //生成实体实现类
-}
-
-func newTmpl(s string) *template.Template {
-	return template.Must(template.New("T").Funcs(funcmap).Parse(s))
+	genEntity(annot.Bean.Name+"_entity_impl.go", annot) //生成实体实现类
+	genAction("../action/action_test.go", annot)        //生成实体实现类
 }
