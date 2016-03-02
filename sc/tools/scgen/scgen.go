@@ -10,6 +10,7 @@ import (
 	"os"
 	"scgo/sc/tools/annotation"
 	//"scgo/sc/tools/scorm"
+	"strings"
 )
 
 func main() {
@@ -59,6 +60,8 @@ func main() {
 	//fmt.Printf("%+v\n", annot.Table.Columns)
 	//fmt.Println(err, f.Name.Name, f.Decls)
 	//fmt.Printf("%+v\n", f)
-	genEntity(annot.Bean.Name+"_entity_impl.go", annot) //生成实体实现类
-	genAction("../action/action_test.go", annot)        //生成实体实现类
+	//生成Entity实现类
+	genEntity(strings.ToLower(annot.Bean.Name)+"_entity_impl.go", annot)
+	//生成Action
+	genAction("../action/"+strings.ToLower(annot.Bean.Name)+"_action.go", annot)
 }

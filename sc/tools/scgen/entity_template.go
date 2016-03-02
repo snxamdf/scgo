@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-func New{{.Bean.Name}}() *Users {
+func New{{.Bean.Name}}() *{{.Bean.Name}} {
 	return &{{.Bean.Name}}{}
 }
 
