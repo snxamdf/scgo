@@ -10,6 +10,8 @@ type Config struct {
 	Error404 ErrorPage //404错误页面
 	Error500 ErrorPage //500错误页面
 	Template Template  //html模版
+	Icon     Icon      //icon
+	Debug    bool      //启动模式
 }
 
 type Mapping struct {
@@ -21,6 +23,10 @@ type Mapping struct {
 type ErrorPage struct {
 	Url     string "" //页面路径
 	Message string "" //返回错误信息
+}
+
+type Icon struct {
+	Name string "" //icon.ico 名称
 }
 
 type Template struct {

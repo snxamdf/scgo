@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"strings"
 )
 
@@ -30,30 +31,25 @@ func (this *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//如果有错误就恢复 并跳转到错误页面
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println(err)
+			if Conf.Debug {
+				log.Println(err, string(debug.Stack()))
+			} else {
+				log.Panicln(err)
+			}
 			this.Error500(w, r)
 		}
 	}()
 	url := r.URL.String()
+	log.Println("--------- ", url)
 	ix := strings.Index(url, "?")
 	if ix > 0 {
 		url = url[0:ix]
 	}
-	if this.isStatic(url) { //js、css、image
-		if staticRoute == nil {
-			staticRoute = &StaticRoute{
-				handle: http.StripPrefix(Conf.Static.Prefix, http.FileServer(http.Dir(Conf.Static.Dir))),
-			}
-		}
-		staticRoute.ServeHTTP(w, r)
+	if this.isStatic(url) { //*.js、*.css、image等静态文件
+		staticRoute.init(w, r)
 		return
-	} else if this.isHtml(url) { //html
-		if htmlRoute == nil {
-			htmlRoute = &StaticRoute{
-				handle: http.StripPrefix(Conf.Html.Prefix, http.FileServer(http.Dir(Conf.Html.Dir))),
-			}
-		}
-		htmlRoute.ServeHTTP(w, r)
+	} else if this.isHtml(url) { //*.html
+		htmlRoute.init(w, r)
 		return
 	} else if murl, ok := this.action[url]; ok { //请求url判断
 		if murl.method == ALL || murl.method == r.Method { //请求方式判断
@@ -105,10 +101,8 @@ func (*Route) isStatic(url string) bool {
 				return true
 			}
 		}
-		return false
-	} else {
-		return false
 	}
+	return false
 }
 
 //判断是否为静态html文件请求
@@ -119,7 +113,6 @@ func (*Route) isHtml(url string) bool {
 				return true
 			}
 		}
-		return false
 	}
 	return false
 }
@@ -148,7 +141,7 @@ func (*Route) Context(w http.ResponseWriter, r *http.Request) (Context, error) {
 
 //运行服务
 func Run() {
-	log.Println("Listening and serving HTTP on :", Conf.Port)
+	log.Println("HTTP PROT", Conf.Port)
 	err := http.ListenAndServe(Conf.Port, route)
 	if err != nil {
 		log.Println(err)
