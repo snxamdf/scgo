@@ -9,7 +9,7 @@ import (
 )
 
 //生成实体实现类 impl_entity_user.go
-func genEntity(path string, annot annotation.BeanToTable) {
+func genEntity(path string, annot annotation.Bean) {
 	fout, err := os.Create(path)
 	defer fout.Close()
 	if err != nil {
@@ -24,7 +24,7 @@ func genEntity(path string, annot annotation.BeanToTable) {
 }
 
 //生成action类 impl_entity_user.go
-func genAction(path string, annot annotation.BeanToTable) {
+func genAction(path string, annot annotation.Bean) {
 	if !exist(path) {
 		fout, err := os.Create(path)
 		defer fout.Close()

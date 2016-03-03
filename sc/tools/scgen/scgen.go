@@ -37,7 +37,7 @@ func main() {
 		fmt.Println(err)
 	}
 	//bean转换table
-	annot := annotation.BeanToTable{}
+	annot := annotation.Bean{}
 	//分析orm
 	//orm := scorm.Orm{}
 	for _, decl := range f.Decls {
@@ -52,8 +52,8 @@ func main() {
 		sdecl := tdecl.Specs[0].(*ast.TypeSpec).Type.(*ast.StructType)
 		//获取字段
 		fields := sdecl.Fields.List
-		annot.ToColumn(fields) //获得列信息
-		annot.ToField(fields)  //获得field信息
+		//annot.ToColumn(fields) //获得列信息
+		annot.ToField(fields) //获得field信息
 		//orm.ToOrm(fields)      //orm
 	}
 	//fmt.Printf("%+v\n", annot.Table)
@@ -61,7 +61,7 @@ func main() {
 	//fmt.Println(err, f.Name.Name, f.Decls)
 	//fmt.Printf("%+v\n", f)
 	//生成Entity实现类
-	genEntity(strings.ToLower(annot.Bean.Name)+"_entity_impl.go", annot)
+	genEntity(strings.ToLower(annot.Name)+"_entity_impl.go", annot)
 	//生成Action
-	genAction("../action/"+strings.ToLower(annot.Bean.Name)+"_action.go", annot)
+	genAction("../action/"+strings.ToLower(annot.Name)+"_action.go", annot)
 }

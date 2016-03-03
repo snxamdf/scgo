@@ -1,19 +1,21 @@
 package mysql
 
 import (
+	"log"
+	"scgo/sc/data"
 	"scgo/sc/data/db"
 )
-
-//	"database/sql"
-var re = &Repository{}
 
 type Repository struct {
 	dbSource db.DBSourceInterface
 }
 
-func New(alias string) *Repository {
+//alias 别名,driverName 驱动名称
+func New(alias, driverName string) *Repository {
+
 	c := &db.Config{
 		Alias:        alias,
+		DriverName:   driverName,
 		UserName:     "root",
 		PassWord:     "root",
 		Ip:           "localhost",
@@ -26,5 +28,34 @@ func New(alias string) *Repository {
 	c.Init()
 	return &Repository{
 		dbSource: c,
+	}
+}
+
+func (this *Repository) Select(entityInterface data.EntityInterface) {
+	var db = this.dbSource.DB()
+	defer db.Close()
+	csql := scSql{sTYPE: SC_S, table: entityInterface.Table()}
+	csql.TableToSql()
+
+	rows, err := db.Query(csql.Sql())
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	cols, err := rows.Columns()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	colsLen := len(cols)
+	for rows.Next() {
+		vals := make([]interface{}, colsLen)
+		for i := 0; i < colsLen; i++ {
+			colm := cols[i]
+			if field := entityInterface.Field(colm); field != nil {
+				vals[i] = field.Value()
+			}
+		}
+		rows.Scan(vals...)
 	}
 }
