@@ -1,23 +1,22 @@
-package cache
+package cache_test
 
 import (
-	"fmt"
+	"log"
+	"scgo/sc/data/cache"
 	"testing"
 )
 
 func TestCacheSet(t *testing.T) {
-	command("SET", "key1", "张三")
 
-	getSet, _ := command("GET", "key1")
-	fmt.Println(getSet)
-
-	command("LPUSH", "key1", "")
+	cache.Set("key1", "field1")
+	val, _ := cache.Get("key1")
+	log.Println(val)
 }
 
 func init() {
-	Conf = &Config{
-		Address: "10.100.130.62:6379",
+	cache.Conf = &cache.Config{
+		Address:  "10.100.130.54:6379",
+		Password: "foobared",
 	}
-	Init(*Conf)
-	fmt.Println(Conf)
+	cache.Init(*cache.Conf)
 }

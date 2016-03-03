@@ -1,12 +1,13 @@
 package cache
 
 import (
-	"github.com/garyburd/redigo/redis"
 	"log"
 	"time"
+
+	"github.com/garyburd/redigo/redis"
 )
 
-//路由配置
+//redis配置
 var Conf *Config
 
 type Config struct {
@@ -105,6 +106,16 @@ func HLen(key string) (int, error) {
 		log.Println(err.Error())
 	}
 	return v, err
+}
+
+func Set(key, val string) error {
+	_, err := do("SET", key, val)
+	return err
+}
+
+func Get(key string) (string, error) {
+	v, err := do("GET", key)
+	return string(v.([]byte)), err
 }
 
 func do(cmd string, args ...interface{}) (interface{}, error) {
