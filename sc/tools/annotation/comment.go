@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"log"
 	"regexp"
+	"scgo/sc/tools/gen"
 	"strings"
 )
 
@@ -13,9 +14,10 @@ type BeanToTable struct {
 }
 
 type Bean struct {
-	TabName string
-	Name    string    //entity名称
-	Fileld  *[]Fileld //bean信息
+	GenEntity *gen.GenEntity
+	TabName   string
+	Name      string    //entity名称
+	Fileld    *[]Fileld //bean信息
 }
 
 type Fileld struct {

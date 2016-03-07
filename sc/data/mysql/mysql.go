@@ -5,6 +5,7 @@ import (
 	"log"
 	"scgo/sc/data"
 	"scgo/sc/data/db"
+	"scgo/sc/data/scsql"
 )
 
 type Repository struct {
@@ -21,7 +22,7 @@ func New(alias, driverName string) *Repository {
 		Ip:           "localhost",
 		Prot:         "3306",
 		DBName:       "testdb",
-		Charset:      "",
+		Charset:      "UTF8",
 		MaxIdleConns: 10,
 		MaxOpenConns: 100,
 	}
@@ -40,7 +41,7 @@ func (this *Repository) Select(entityBean data.EntityBeanInterface) {
 	defer db.Close()
 	table := entityBean.Table()
 
-	csql := scSql{sTYPE: SC_S, table: table}
+	csql := scsql.ScSql{S_TYPE: scsql.SC_S, Table: table}
 	csql.TableToSql()
 
 	rows, err := db.Query(csql.Sql())

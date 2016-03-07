@@ -64,11 +64,11 @@ func (this *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				murl.mfunc(c) //调用函数
 			}
 		} else {
-			log.Println("未找到这个连接", url, "这个连接的请求方式是", murl.method, ",当前请求方式是", r.Method)
+			log.Println("未找到这个 URL", url, "URL 请求方式", murl.method, ",当前请求方式", r.Method)
 			this.Error404(w, r)
 		}
 	} else {
-		log.Println("未找到这个连接", url, ",当前请求方式是", r.Method)
+		log.Println("未找到这个 URL", url, ",请求方式", r.Method)
 		this.Error404(w, r)
 	}
 }

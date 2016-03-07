@@ -1,4 +1,4 @@
-package main
+package tools
 
 import (
 	"strings"
@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	funcmap = template.FuncMap{
+	FuncMap = template.FuncMap{
 		"lower": func(s string) string {
 			return strings.ToLower(s)
 		},

@@ -41,7 +41,7 @@ func (this *{{.Name}}Bean) Entitys() *{{.Name}}s {
 }
 
 func (this *{{.Name}}Bean) Table() data.TableInformation {
-	return {{.TabName}}TableInformation
+	return {{lower .Name}}TableInformation
 }
 
 func (this *{{.Name}}Bean) SetEntity(bean data.EntityInterface) {
@@ -73,21 +73,23 @@ func (this *{{.Name}}s) Values() []*{{.Name}} {
 func New{{.Name}}() *{{.Name}} {
 	return &{{.Name}}{}
 }
-{{$beanName:=.Name}}
-{{range $bean:=.Fileld}}
+{{$beanName:=.Name}}{{range $bean:=.Fileld}}
 func (this *{{$beanName}}) {{upperFirst $bean.Name}}() {{fieldType $bean.Type}} {
 	{{if equal "int" (fieldType $bean.Type)}}v, _ := strconv.Atoi(*this.id.Pointer())
 	return v{{else}}return *this.{{$bean.Name}}.Pointer(){{end}}
 }
+
+func (this *{{$beanName}}) Set{{upperFirst $bean.Name}}(value {{if equal "int" (fieldType $bean.Type)}}int{{else}}string{{end}}) {
+	this.{{$bean.Name}}.SetValue({{if equal "int" (fieldType $bean.Type)}}strconv.Itoa(value){{else}}value{{end}})
+}
 {{end}}
-	
 func (this *{{.Name}}) SetValue(filedName, value string) {
 	this.Field(filedName).SetValue(value)
 }
 
 func (this *{{.Name}}) Field(filedName string) data.EntityField {
 	switch filedName {
-	{{range $bean:=.Fileld}}case "{{lower $bean.Name}}"{{if isNotBlank $bean.Column.Name}},"{{lower $bean.Column.Name}}"{{end}}:
+	{{range $bean:=.Fileld}}case "{{lower $bean.Name}}"{{if isNotBlank $bean.Column.Name}}, "{{lower $bean.Column.Name}}"{{end}}:
 		return this.{{$bean.Name}}.StructType()
 	{{end}}
 	}
@@ -106,17 +108,18 @@ func (this *{{.Name}}) JSON() string {
 
 //----------------------init() end--------------------------------------
 func init() {
-	{{.TabName}}TableInformation.SetTableName("{{.TabName}}")
-	{{.TabName}}Columns := []string{
-	{{range $field:=.Fileld}}{{$colm:=$field.Column}}{{if isNotBlank $colm.Name}}"{{$colm.Name}}",{{end}}{{end}}
+	{{lower .Name}}TableInformation.SetTableName("{{.TabName}}")
+	{{lower .Name}}Columns := []string{
+		{{range $field:=.Fileld}}{{$colm:=$field.Column}}{{if isNotBlank $colm.Name}}"{{$colm.Name}}", {{end}}{{end}}
 	}
-	{{.TabName}}TableInformation.SetColumns({{.TabName}}Columns)
+	{{lower .Name}}TableInformation.SetColumns({{lower .Name}}Columns)
 }
 
-var {{.TabName}}TableInformation data.TableInformation
+var {{lower .Name}}TableInformation data.TableInformation
 
 func (this *{{.Name}}) Table() data.TableInformation {
-	return {{.TabName}}TableInformation
+	return {{lower .Name}}TableInformation
 }
+
 //----------------------init() end--------------------------------------
 `
