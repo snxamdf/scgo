@@ -20,6 +20,7 @@ type Bean struct {
 
 type Fileld struct {
 	Name   string //字段名
+	Type   string //字段类型
 	Column Column //列名
 }
 
@@ -35,7 +36,9 @@ func (this *Bean) ToField(fields []*ast.Field) {
 	log.Println("------ToField------")
 	filelds := make([]Fileld, len(fields))
 	for i, field := range fields { //遍历字段
-		filelds[i].Name = field.Names[0].Name
+		//log.Println(field.Type.(*ast.SelectorExpr).Sel.Name, field.Names)
+		filelds[i].Name = field.Names[0].Name                     //字段名称
+		filelds[i].Type = field.Type.(*ast.SelectorExpr).Sel.Name //字段类型
 		if field.Doc == nil {
 			continue
 		}

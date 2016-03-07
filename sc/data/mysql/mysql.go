@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"database/sql"
 	"log"
 	"scgo/sc/data"
 	"scgo/sc/data/db"
@@ -12,7 +13,6 @@ type Repository struct {
 
 //alias 别名,driverName 驱动名称
 func New(alias, driverName string) *Repository {
-
 	c := &db.Config{
 		Alias:        alias,
 		DriverName:   driverName,
@@ -31,10 +31,16 @@ func New(alias, driverName string) *Repository {
 	}
 }
 
-func (this *Repository) Select(entityInterface data.EntityInterface) {
-	var db = this.dbSource.DB()
+func (this *Repository) DB() *sql.DB {
+	return this.dbSource.DB()
+}
+
+func (this *Repository) Select(entityBean data.EntityBeanInterface) {
+	var db = this.DB()
 	defer db.Close()
-	csql := scSql{sTYPE: SC_S, table: entityInterface.Table()}
+	table := entityBean.Table()
+
+	csql := scSql{sTYPE: SC_S, table: table}
 	csql.TableToSql()
 
 	rows, err := db.Query(csql.Sql())
@@ -48,14 +54,19 @@ func (this *Repository) Select(entityInterface data.EntityInterface) {
 		return
 	}
 	colsLen := len(cols)
+	beans := entityBean.NewEntitys(5)
+
 	for rows.Next() {
 		vals := make([]interface{}, colsLen)
+		bean := entityBean.NewEntity()
 		for i := 0; i < colsLen; i++ {
 			colm := cols[i]
-			if field := entityInterface.Field(colm); field != nil {
-				vals[i] = field.Value()
+			if field := bean.Field(colm); field != nil {
+				vals[i] = field.Pointer()
 			}
 		}
 		rows.Scan(vals...)
+		beans.Add(bean)
 	}
+	entityBean.SetEntitys(beans)
 }

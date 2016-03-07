@@ -11,8 +11,11 @@ import (
 
 func TestMysql(t *testing.T) {
 	var repository = mysql.New("mysql_dev", "mysql")
-	var e = entity.NewUser()
+	var e = entity.NewUserBean()
 	repository.Select(e)
-	log.Println(e.Addr)
+	es := e.Entitys()
+	for i, v := range es.Values() {
+		log.Println(i, v.Id(), v.Name())
 
+	}
 }

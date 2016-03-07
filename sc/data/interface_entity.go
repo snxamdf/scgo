@@ -2,9 +2,18 @@ package data
 
 //实体字段接口
 type EntityField interface {
-	Value() *string
+	//Value() string
 	Type() string
 	SetValue(value string)
+	Pointer() *string
+}
+
+type EntityBeanInterface interface {
+	NewEntity() EntityInterface
+	NewEntitys(cap int) EntitysInterface
+	SetEntity(bean EntityInterface)
+	SetEntitys(beans EntitysInterface)
+	Table() TableInformation
 }
 
 //实体
@@ -12,8 +21,10 @@ type EntityInterface interface {
 	SetValue(filed, value string)
 	Field(filedName string) EntityField
 	JSON() string
-	Table() TableInformation
-	//News() []EntityInterface
+}
+
+type EntitysInterface interface {
+	Add(e EntityInterface)
 }
 
 type TableInformation struct {
@@ -51,9 +62,9 @@ func (this *Integer) SetValue(value string) {
 	this.value = value
 }
 
-func (this *Integer) Value() *string {
-	return &this.value
-}
+//func (this *Integer) Value() int {
+//	return this.value
+//}
 
 func (this *Integer) Type() string {
 	return "int"
@@ -63,13 +74,17 @@ func (this *Integer) StructType() *Integer {
 	return this
 }
 
+func (this *Integer) Pointer() *string {
+	return &this.value
+}
+
 func (this *String) SetValue(value string) {
 	this.value = value
 }
 
-func (this *String) Value() *string {
-	return &this.value
-}
+//func (this *String) Value() string {
+//	return this.value
+//}
 
 func (this *String) Type() string {
 	return "string"
@@ -77,4 +92,8 @@ func (this *String) Type() string {
 
 func (this *String) StructType() *String {
 	return this
+}
+
+func (this *String) Pointer() *string {
+	return &this.value
 }
