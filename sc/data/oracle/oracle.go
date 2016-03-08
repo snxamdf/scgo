@@ -1,4 +1,4 @@
-package mysql
+package oracle
 
 import (
 	"scgo/sc/data/scdb"

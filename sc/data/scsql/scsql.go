@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"log"
 	"scgo/sc/data"
+	"scgo/sc/tools"
+	"scgo/sc/tools/uuid"
 )
 
 const (
@@ -12,60 +14,212 @@ const (
 	SC_U = 2
 	SC_S = 3
 
-	SELECTD = "select"
-	FROM    = "from"
-	INSERT  = "insert"
-	VALUES  = "values"
-	UPDATE  = "update"
-	SET     = "set"
-	DELETED = "delete"
-	WHERE   = "where"
-	ORDER   = "order"
-	BY      = "by"
-	DESC    = "desc"
-	ASC     = "asc"
-	SPACE   = " "
+	SELECTD        = "select"
+	FROM           = "from"
+	INSERT         = "insert"
+	INTO           = "into"
+	VALUES         = "values"
+	UPDATE         = "update"
+	SET            = "set"
+	DELETED        = "delete"
+	WHERE          = "where"
+	ORDER          = "order"
+	BY             = "by"
+	DESC           = "desc"
+	ASC            = "asc"
+	SPACE          = " "
+	PARENTHESESL_L = "("
+	PARENTHESESL_R = ")"
 )
 
-type ScSql struct {
-	S_TYPE int
-	sql    string
-	Table  data.TableInformation
+type SCSQL struct {
+	S_TYPE  int                   //当前想要执行的操作
+	sql     string                //生成的sql
+	Args    []interface{}         //参数值
+	Operate int                   //准备执行的操作
+	Entity  data.EntityInterface  //实体
+	Table   data.TableInformation //表信息
 }
 
-func (this *ScSql) TableToSql() {
+//Parse SQL
+func (this *SCSQL) ParseSQL() {
 	if this.S_TYPE == SC_I { //insert
-
+		this.genInsert()
 	} else if this.S_TYPE == SC_D { //delete
-
+		this.genDelete()
 	} else if this.S_TYPE == SC_U { //update
-
+		this.genUpdate()
 	} else if this.S_TYPE == SC_S { //select
 		this.genSelect()
 	}
 }
 
-func (this *ScSql) genSelect() {
+//Primary Key Is Blank
+func (this *SCSQL) PrimaryKeyIsBlank() bool {
+	table := this.Table
+	entity := this.Entity
+	columns := table.Columns()
+	for _, v := range columns {
+		field := entity.Field(v)
+		if field.PrimaryKey() && tools.IsNotBlank(*field.Pointer()) {
+			return true
+		}
+	}
+	return false
+}
+
+//delete
+func (this *SCSQL) genDelete() {
 	var wr bytes.Buffer
+
+	entity := this.Entity
+	table := this.Table
+	columns := table.Columns()
+	wr.WriteString(DELETED + SPACE + table.TableName() + SPACE + WHERE + SPACE)
+	for i, v := range columns {
+		field := entity.Field(v)
+		if i > 0 {
+
+		}
+		log.Println(field)
+	}
+}
+
+//update
+func (this *SCSQL) genUpdate() {
+
+}
+
+//insert
+func (this *SCSQL) genInsert() {
+	var wr bytes.Buffer
+	var wrcom bytes.Buffer
+	var wrval bytes.Buffer
+	args := make([]interface{}, 0, 1)
+	entity := this.Entity
+	table := this.Table
+	columns := table.Columns()
+	wr.WriteString(INSERT + SPACE + INTO + SPACE + table.TableName() + SPACE)
+
+	for i, v := range columns {
+		field := entity.Field(v)
+		if i > 0 {
+			wrcom.WriteString(",")
+			wrval.WriteString(",")
+		}
+		if field.PrimaryKey() {
+			uuid := uuid.NewV1()
+			field.SetValue(uuid.String())
+		}
+		wrcom.WriteString(v)
+		wrval.WriteString("?")
+		args = append(args, field.Value())
+	}
+	wr.WriteString(PARENTHESESL_L + wrcom.String() + PARENTHESESL_R + SPACE)
+	wr.WriteString(VALUES + PARENTHESESL_L + wrval.String() + PARENTHESESL_R + SPACE)
+	this.sql = wr.String()
+	this.Args = args
+}
+
+//select
+func (this *SCSQL) genSelect() {
+	var wr bytes.Buffer
+	entity := this.Entity
+	table := this.Table
+	columns := table.Columns()
 	wr.WriteString(SELECTD)
 	wr.WriteString(SPACE)
-	for i, colm := range this.Table.Columns() {
+	sft := &sift{}
+	for i, v := range columns {
 		if i > 0 {
 			wr.WriteString(",")
 		}
+		field := entity.Field(v)
+		sft.genExp(v, field)
 		wr.WriteString("t.")
-		wr.WriteString(colm)
+		wr.WriteString(v)
 	}
 	wr.WriteString(SPACE)
 	wr.WriteString(FROM)
 	wr.WriteString(SPACE)
-	wr.WriteString(this.Table.TableName())
+	wr.WriteString(table.TableName())
 	wr.WriteString(SPACE)
 	wr.WriteString("t")
-	this.sql = wr.String()
+	_, sftSql, vals := sft.genExpSift()
+	this.sql = wr.String() + sftSql
+	this.Args = vals
 }
 
-func (this *ScSql) Sql() string {
-	log.Println("SQL :", this.sql)
+type sift struct {
+	sifts [][]string
+}
+
+//exp return exp ctor
+func (this *sift) genExp(column string, field data.EntityField) {
+	fieldExp := field.FieldExp()
+	if fieldExp.IsSet() {
+		value := fieldExp.Value()
+		exp := fieldExp.Exp()
+		ctor := fieldExp.Ctor().Value()
+		ctorLen := len(ctor)
+		for i, v := range value {
+			if i <= ctorLen {
+				sft := make([]string, 4)
+				sft[0] = column
+				sft[1] = exp[i]
+				sft[2] = v
+				sft[3] = ctor[i]
+				this.sifts = append(this.sifts, sft)
+			}
+		}
+		if ctorLen == 1 {
+			sft := make([]string, 4)
+			sft[0] = column
+			sft[1] = exp[0]
+			sft[2] = field.Value()
+			sft[3] = ctor[0]
+			this.sifts = append(this.sifts, sft)
+		}
+	}
+}
+
+//gen exp sift sql
+func (this *sift) genExpSift() (bool, string, []interface{}) {
+	var wr bytes.Buffer
+	args := make([]interface{}, 0, 1)
+	var ctor string
+	var val, whe string
+	for _, v := range this.sifts {
+		switch v[1] {
+		case data.EXP_LK:
+			whe = "like"
+			val = "concat('%',?,'%')"
+			break
+		case data.EXP_LK_R:
+			whe = "like"
+			val = "concat('%',?)"
+			break
+		case data.EXP_LK_L:
+			whe = "like"
+			val = "concat(?,'%')"
+			break
+		default:
+			whe = v[1]
+			val = "?"
+			break
+		}
+		wr.WriteString(ctor + SPACE + "t." + v[0] + SPACE + whe + SPACE + val + SPACE)
+		args = append(args, v[2])
+		ctor = v[3]
+	}
+	if tools.IsNotBlank(wr.String()) {
+		return true, SPACE + WHERE + wr.String(), args
+	}
+	return false, "", args
+}
+
+//sql
+func (this *SCSQL) SQL() string {
+	log.Println("SQL :", this.sql, "ARGS :", this.Args)
 	return this.sql
 }

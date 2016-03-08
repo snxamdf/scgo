@@ -24,16 +24,10 @@ var (
 			return v
 		},
 		"isBlank": func(s string) bool {
-			if strings.Trim(s, " ") == "" || s == "nil" || s == "null" {
-				return true
-			}
-			return false
+			return IsBlank(s)
 		},
 		"isNotBlank": func(s string) bool {
-			if strings.Trim(s, " ") != "" && s != "nil" && s != "null" {
-				return true
-			}
-			return false
+			return IsNotBlank(s)
 		},
 		"fieldType": func(s string) string { //判断字段类型
 			switch s {

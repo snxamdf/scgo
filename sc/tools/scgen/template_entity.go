@@ -32,7 +32,7 @@ func (this *{{.Name}}Bean) NewEntitys(cap int) data.EntitysInterface {
 	return e
 }
 
-func (this *{{.Name}}Bean) Entity() *{{.Name}} {
+func (this *{{.Name}}Bean) Entity() data.EntityInterface {
 	return this.bean
 }
 
@@ -74,9 +74,8 @@ func New{{.Name}}() *{{.Name}} {
 	return &{{.Name}}{}
 }
 {{$beanName:=.Name}}{{range $bean:=.Fileld}}
-func (this *{{$beanName}}) {{upperFirst $bean.Name}}() {{fieldType $bean.Type}} {
-	{{if equal "int" (fieldType $bean.Type)}}v, _ := strconv.Atoi(*this.id.Pointer())
-	return v{{else}}return *this.{{$bean.Name}}.Pointer(){{end}}
+func (this *{{$beanName}}) {{upperFirst $bean.Name}}() *data.{{if equal "int" (fieldType $bean.Type)}}Integer{{else if equal "string" (fieldType $bean.Type)}}String{{end}} {
+	return &this.{{$bean.Name}}
 }
 
 func (this *{{$beanName}}) Set{{upperFirst $bean.Name}}(value {{if equal "int" (fieldType $bean.Type)}}int{{else}}string{{end}}) {
@@ -87,12 +86,16 @@ func (this *{{.Name}}) SetValue(filedName, value string) {
 	this.Field(filedName).SetValue(value)
 }
 
+func (this *{{.Name}}) Table() data.TableInformation {
+	return {{lower .Name}}TableInformation
+}
+
 func (this *{{.Name}}) Field(filedName string) data.EntityField {
 	switch filedName {
-	{{range $bean:=.Fileld}}case "{{lower $bean.Name}}"{{if isNotBlank $bean.Column.Name}}, "{{lower $bean.Column.Name}}"{{end}}:
-		return this.{{$bean.Name}}.StructType()
-	{{end}}
-	}
+	{{range $field:=.Fileld}}case "{{lower $field.Name}}"{{if isNotBlank $field.Column.Name}}, "{{lower $field.Column.Name}}"{{end}}:
+		{{if $field.Column.Identif}}this.{{$field.Name}}.SetPrimaryKey(true)
+		return this.{{$field.Name}}.StructType(){{else}}return this.{{$field.Name}}.StructType(){{end}}
+	{{end}}}
 	return nil
 }
 
@@ -116,10 +119,6 @@ func init() {
 }
 
 var {{lower .Name}}TableInformation data.TableInformation
-
-func (this *{{.Name}}) Table() data.TableInformation {
-	return {{lower .Name}}TableInformation
-}
 
 //----------------------init() end--------------------------------------
 `

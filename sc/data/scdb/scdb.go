@@ -1,4 +1,4 @@
-package db
+package scdb
 
 import (
 	"database/sql"
@@ -6,7 +6,6 @@ import (
 )
 
 type DBSourceInterface interface {
-	Init() error
 	DB() *sql.DB
 }
 
@@ -18,12 +17,15 @@ type Config struct {
 	Db                         *sql.DB
 }
 
-func (this *Config) Init() error {
+func (this *Config) DB() *sql.DB {
+	return this.Db
+}
+
+func (this *Config) MySqlInit() error {
 	if this.Charset == "" {
 		this.Charset = "UTF8"
 	}
 	var dataSource = this.UserName + ":" + this.PassWord + "@tcp(" + this.Ip + ":" + this.Prot + ")/" + this.DBName + "?charset=" + this.Charset
-	dataSource = this.UserName + ":" + this.PassWord + "@tcp(" + this.Ip + ":" + this.Prot + ")/" + this.DBName + "?charset=" + this.Charset
 	log.Println("data source :", dataSource)
 	db, err := sql.Open(this.DriverName, dataSource)
 	if err != nil {
@@ -37,6 +39,20 @@ func (this *Config) Init() error {
 	return nil
 }
 
-func (this *Config) DB() *sql.DB {
-	return this.Db
+func (this *Config) OracleInit() error {
+	if this.Charset == "" {
+		this.Charset = "UTF8"
+	}
+	var dataSource = this.UserName + ":" + this.PassWord + "@tcp(" + this.Ip + ":" + this.Prot + ")/" + this.DBName + "?charset=" + this.Charset
+	log.Println("data source :", dataSource)
+	db, err := sql.Open(this.DriverName, dataSource)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	db.SetMaxIdleConns(this.MaxIdleConns)
+	db.SetMaxOpenConns(this.MaxOpenConns)
+	this.Db = db
+	return nil
 }
