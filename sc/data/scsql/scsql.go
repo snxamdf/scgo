@@ -6,6 +6,7 @@ import (
 	"scgo/sc/data"
 	"scgo/sc/tools"
 	"scgo/sc/tools/uuid"
+	"strings"
 )
 
 const (
@@ -191,25 +192,24 @@ func (this *sift) genExpSift() (bool, string, []interface{}) {
 	var val, whe string
 	for _, v := range this.sifts {
 		switch v[1] {
-		case data.EXP_LK:
+		case data.EXP_LK, data.EXP_LK_R, data.EXP_LK_L:
 			whe = "like"
-			val = "concat('%',?,'%')"
-			break
-		case data.EXP_LK_R:
-			whe = "like"
-			val = "concat('%',?)"
-			break
-		case data.EXP_LK_L:
-			whe = "like"
-			val = "concat(?,'%')"
+			like := v[1]
+			if strings.Index(like, "%") == -1 {
+				val = "%" + v[2] + "%"
+			} else if strings.Index(like, "%") == 0 {
+				val = "%" + v[2]
+			} else if strings.Index(like, "%") == 4 {
+				val = v[2] + "%"
+			}
+			args = append(args, val)
 			break
 		default:
 			whe = v[1]
-			val = "?"
+			args = append(args, v[2])
 			break
 		}
-		wr.WriteString(ctor + SPACE + "t." + v[0] + SPACE + whe + SPACE + val + SPACE)
-		args = append(args, v[2])
+		wr.WriteString(ctor + SPACE + "t." + v[0] + SPACE + whe + SPACE + "?" + SPACE)
 		ctor = v[3]
 	}
 	if tools.IsNotBlank(wr.String()) {
