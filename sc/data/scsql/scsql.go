@@ -34,12 +34,13 @@ const (
 )
 
 type SCSQL struct {
-	S_TYPE  int                   //当前想要执行的操作
-	sql     string                //生成的sql
-	Args    []interface{}         //参数值
-	Operate int                   //准备执行的操作
-	Entity  data.EntityInterface  //实体
-	Table   data.TableInformation //表信息
+	S_TYPE       int                   //当前想要执行的操作
+	sql          string                //生成的sql
+	Args         []interface{}         //参数值
+	Operate      int                   //准备执行的操作
+	Entity       data.EntityInterface  //实体
+	Table        data.TableInformation //表信息
+	DataBaseType string                //数据库类型 mysql、oracle ...
 }
 
 //Parse SQL
@@ -62,7 +63,7 @@ func (this *SCSQL) PrimaryKeyIsBlank() bool {
 	columns := table.Columns()
 	for _, v := range columns {
 		field := entity.Field(v)
-		if field.PrimaryKey() && tools.IsNotBlank(*field.Pointer()) {
+		if field.PrimaryKey() && tools.IsNotBlank(field.Value()) {
 			return true
 		}
 	}
@@ -72,7 +73,6 @@ func (this *SCSQL) PrimaryKeyIsBlank() bool {
 //delete
 func (this *SCSQL) genDelete() {
 	var wr bytes.Buffer
-
 	entity := this.Entity
 	table := this.Table
 	columns := table.Columns()
@@ -80,7 +80,6 @@ func (this *SCSQL) genDelete() {
 	for i, v := range columns {
 		field := entity.Field(v)
 		if i > 0 {
-
 		}
 		log.Println(field)
 	}
@@ -88,7 +87,30 @@ func (this *SCSQL) genDelete() {
 
 //update
 func (this *SCSQL) genUpdate() {
-
+	var wr bytes.Buffer
+	entity := this.Entity
+	table := this.Table
+	columns := table.Columns()
+	args := make([]interface{}, 0, len(columns))
+	wr.WriteString(UPDATE + SPACE + table.TableName() + " t " + SET + SPACE)
+	sft := &sift{stype: this.S_TYPE}
+	var i int
+	for _, v := range columns {
+		field := entity.Field(v)
+		sft.genExp(v, field)
+		if !field.PrimaryKey() && !field.FieldExp().IsSet() && tools.IsNotBlank(field.Value()) {
+			if i > 0 {
+				wr.WriteString(", ")
+			}
+			wr.WriteString("t." + v + " = ?")
+			args = append(args, field.Value())
+			i++
+		}
+	}
+	_, sftSql, vals := sft.genSiftSql()
+	args = append(args, vals...)
+	this.sql = wr.String() + sftSql
+	this.Args = args
 }
 
 //insert
@@ -96,10 +118,10 @@ func (this *SCSQL) genInsert() {
 	var wr bytes.Buffer
 	var wrcom bytes.Buffer
 	var wrval bytes.Buffer
-	args := make([]interface{}, 0, 1)
 	entity := this.Entity
 	table := this.Table
 	columns := table.Columns()
+	args := make([]interface{}, 0, len(columns))
 	wr.WriteString(INSERT + SPACE + INTO + SPACE + table.TableName() + SPACE)
 
 	for i, v := range columns {
@@ -126,11 +148,12 @@ func (this *SCSQL) genInsert() {
 func (this *SCSQL) genSelect() {
 	var wr bytes.Buffer
 	entity := this.Entity
+
 	table := this.Table
 	columns := table.Columns()
 	wr.WriteString(SELECTD)
 	wr.WriteString(SPACE)
-	sft := &sift{}
+	sft := &sift{stype: this.S_TYPE}
 	for i, v := range columns {
 		if i > 0 {
 			wr.WriteString(",")
@@ -146,19 +169,20 @@ func (this *SCSQL) genSelect() {
 	wr.WriteString(table.TableName())
 	wr.WriteString(SPACE)
 	wr.WriteString("t")
-	_, sftSql, vals := sft.genExpSift()
+	_, sftSql, vals := sft.genSiftSql()
 	this.sql = wr.String() + sftSql
 	this.Args = vals
 }
 
 type sift struct {
 	sifts [][]string
+	stype int
 }
 
 //exp return exp ctor
 func (this *sift) genExp(column string, field data.EntityField) {
 	fieldExp := field.FieldExp()
-	if fieldExp.IsSet() {
+	if fieldExp.IsSet() && tools.IsNotBlank(field.Value()) {
 		value := fieldExp.Value()
 		exp := fieldExp.Exp()
 		ctor := fieldExp.Ctor().Value()
@@ -185,7 +209,7 @@ func (this *sift) genExp(column string, field data.EntityField) {
 }
 
 //gen exp sift sql
-func (this *sift) genExpSift() (bool, string, []interface{}) {
+func (this *sift) genSiftSql() (bool, string, []interface{}) {
 	var wr bytes.Buffer
 	args := make([]interface{}, 0, 1)
 	var ctor string

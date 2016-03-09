@@ -54,7 +54,33 @@ func genAction(fileName string, annot annotation.Bean) {
 	}
 }
 
-//生成service类 xxxx_action.go
+//生成service类 xxxx_service_impl.go
+func genServiceImpl(fileName string, annot annotation.Bean) {
+	gentity := annot.GenEntity
+	genPath := gentity.GoPath + "/" + gentity.ProjectDir + "/" + gentity.GoSourceDir + "/" + gentity.ModuleName
+	log.Println(genPath, exist(genPath))
+	fileDir := genPath + "/" + gen.GEN_SERVICE
+	log.Println(fileDir, exist(fileDir))
+	filePath := fileDir + "/" + fileName
+	log.Println(filePath, exist(filePath))
+	if !exist(fileDir) {
+		err := os.MkdirAll(fileDir, 0777)
+		log.Println("MkdirAll ", fileDir, err)
+	}
+	fout, err := os.Create(filePath)
+	defer fout.Close()
+	if err != nil {
+		log.Println(filePath, err)
+		return
+	}
+	buf := bytes.Buffer{}
+	temple := newTmpl(serviceTempImpl)
+	temple.Execute(&buf, annot)
+	n, err := fout.Write(buf.Bytes())
+	log.Println(n, err)
+}
+
+//生成service类 xxxx_service.go
 func genService(fileName string, annot annotation.Bean) {
 	gentity := annot.GenEntity
 	genPath := gentity.GoPath + "/" + gentity.ProjectDir + "/" + gentity.GoSourceDir + "/" + gentity.ModuleName

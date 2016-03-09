@@ -5,8 +5,14 @@ import (
 	"log"
 )
 
+const (
+	DATA_BASE_MYSQL  = "mysql"
+	DATA_BASE_ORACLE = "oracle"
+)
+
 type DBSourceInterface interface {
 	DB() *sql.DB
+	DataBaseType() string
 }
 
 type Config struct {
@@ -15,10 +21,15 @@ type Config struct {
 	Ip, Prot, DBName, Charset  string
 	MaxIdleConns, MaxOpenConns int
 	Db                         *sql.DB
+	dataBaseType               string
 }
 
 func (this *Config) DB() *sql.DB {
 	return this.Db
+}
+
+func (this *Config) DataBaseType() string {
+	return this.dataBaseType
 }
 
 func (this *Config) MySqlInit() error {
@@ -36,6 +47,7 @@ func (this *Config) MySqlInit() error {
 	db.SetMaxIdleConns(this.MaxIdleConns)
 	db.SetMaxOpenConns(this.MaxOpenConns)
 	this.Db = db
+	this.dataBaseType = DATA_BASE_MYSQL
 	return nil
 }
 
@@ -54,5 +66,6 @@ func (this *Config) OracleInit() error {
 	db.SetMaxIdleConns(this.MaxIdleConns)
 	db.SetMaxOpenConns(this.MaxOpenConns)
 	this.Db = db
+	this.dataBaseType = DATA_BASE_ORACLE
 	return nil
 }

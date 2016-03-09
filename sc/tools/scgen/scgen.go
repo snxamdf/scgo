@@ -67,10 +67,12 @@ func main() {
 		annot.ToField(fields) //获得field信息
 		//orm.ToOrm(fields)      //orm
 	}
-	//生成Entity实现类
+	//生成entity impl
 	genEntity(strings.ToLower(annot.Name)+"_entity_impl.go", annot)
 	//生成Action
 	genAction(strings.ToLower(annot.Name)+"_action.go", annot)
+	//生成service impl
+	genServiceImpl(strings.ToLower(annot.Name)+"_service_impl.go", annot)
 	//生成service
 	genService(strings.ToLower(annot.Name)+"_service.go", annot)
 }

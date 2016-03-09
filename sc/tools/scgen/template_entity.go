@@ -19,6 +19,7 @@ type {{.Name}}Bean struct {
 
 func New{{.Name}}Bean() *{{.Name}}Bean {
 	e := &{{.Name}}Bean{}
+	//e.NewEntity()
 	return e
 }
 
@@ -27,16 +28,20 @@ func (this *{{.Name}}Bean) NewEntity() data.EntityInterface {
 }
 
 func (this *{{.Name}}Bean) NewEntitys(cap int) data.EntitysInterface {
-	e := &{{.Name}}s{}
-	e.datas = make([]*{{.Name}}, 0, cap)
-	return e
+	return New{{.Name}}s(cap)
 }
 
 func (this *{{.Name}}Bean) Entity() data.EntityInterface {
+	if this.bean == nil {
+		return nil
+	}
 	return this.bean
 }
 
 func (this *{{.Name}}Bean) Entitys() *{{.Name}}s {
+	if this.beans == nil {
+		return nil
+	}
 	return this.beans
 }
 
@@ -59,12 +64,31 @@ type {{.Name}}s struct {
 	datas []*{{.Name}}
 }
 
+func New{{.Name}}s(cap int) *{{.Name}}s {
+	e := &{{.Name}}s{}
+	e.datas = make([]*{{.Name}}, 0, cap)
+	return e
+}
+
 func (this *{{.Name}}s) Add(e data.EntityInterface) {
 	this.datas = append(this.datas, e.(*{{.Name}}))
 }
 
 func (this *{{.Name}}s) Values() []*{{.Name}} {
 	return this.datas
+}
+
+func (this *{{.Name}}s) JSON() string {
+	var wr bytes.Buffer
+	wr.WriteString("[")
+	for i, v := range this.Values() {
+		if i > 0 {
+			wr.WriteString(",")
+		}
+		wr.WriteString(v.JSON())
+	}
+	wr.WriteString("]")
+	return wr.String()
 }
 
 //----------------------{{.Name}}Bean end--------------------------------------
@@ -92,7 +116,7 @@ func (this *{{.Name}}) Table() data.TableInformation {
 
 func (this *{{.Name}}) Field(filedName string) data.EntityField {
 	switch filedName {
-	{{range $field:=.Fileld}}case "{{lower $field.Name}}"{{if isNotBlank $field.Column.Name}}, "{{lower $field.Column.Name}}"{{end}}:
+	{{range $field:=.Fileld}}case {{if equal (lower $field.Name) (lower $field.Column.Name)}}"{{lower $field.Name}}"{{else}}"{{lower $field.Name}}"{{if isNotBlank $field.Column.Name}}, "{{lower $field.Column.Name}}"{{end}}{{end}}:
 		{{if $field.Column.Identif}}this.{{$field.Name}}.SetPrimaryKey(true)
 		return this.{{$field.Name}}.StructType(){{else}}return this.{{$field.Name}}.StructType(){{end}}
 	{{end}}}
@@ -101,8 +125,8 @@ func (this *{{.Name}}) Field(filedName string) data.EntityField {
 
 func (this *{{.Name}}) JSON() string {
 	var b bytes.Buffer
-	b.WriteString("{")
-	{{range .Fileld}}b.WriteString(fmt.Sprintf(` + "`" + `"{{lower .Name}}":%q` + "`" + `, this.{{upperFirst .Name}}()))
+	b.WriteString("{"){{range $index,$field := .Fileld}}{{if gt $index 0}}b.WriteString(","){{end}}
+	b.WriteString(fmt.Sprintf(` + "`" + `"{{.Name}}":%q` + "`" + `, this.{{.Name}}.Value()))
 	{{end}}b.WriteString("}")
 	return b.String()
 }

@@ -11,7 +11,7 @@ func IsBlank(s string) bool {
 	return false
 }
 func IsNotBlank(s string) bool {
-	if strings.Trim(s, " ") != "" && s != "nil" && s != "null" {
+	if strings.TrimSpace(s) != "" && s != "nil" && s != "null" {
 		return true
 	}
 	return false

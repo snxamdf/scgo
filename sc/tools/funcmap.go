@@ -41,5 +41,17 @@ var (
 		"equal": func(s, e string) bool {
 			return s == e
 		},
+		"gt": func(s, e int) bool {
+			return s > e
+		},
+		"gteq": func(s, e int) bool {
+			return s >= e
+		},
+		"lt": func(s, e int) bool {
+			return s < e
+		},
+		"lteq": func(s, e int) bool {
+			return s <= e
+		},
 	}
 )

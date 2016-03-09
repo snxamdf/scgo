@@ -2,6 +2,8 @@ package mysql
 
 import (
 	"scgo/sc/data/scdb"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 //alias 别名,driverName 驱动名称
@@ -19,7 +21,11 @@ func New(alias, driverName string) *scdb.Repository {
 		MaxOpenConns: 100,
 	}
 	c.MySqlInit()
-	return &scdb.Repository{
-		DBSource: c,
-	}
+	e := &scdb.Repository{}
+	e.SetDBSource(c)
+	return e
+}
+
+func init() {
+	scdb.Connection = New("mysql_dev", "mysql")
 }
