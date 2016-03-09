@@ -10,10 +10,11 @@ import (
 )
 
 const (
-	SC_I = 0
-	SC_D = 1
-	SC_U = 2
-	SC_S = 3
+	SC_I     = 0
+	SC_D     = 1
+	SC_U     = 2
+	SC_S     = 3
+	SC_S_ONE = 4
 
 	SELECTD        = "select"
 	FROM           = "from"
@@ -53,6 +54,8 @@ func (this *SCSQL) ParseSQL() {
 		this.genUpdate()
 	} else if this.S_TYPE == SC_S { //select
 		this.genSelect()
+	} else if this.S_TYPE == SC_S_ONE { //select one
+		this.genSelectOne()
 	}
 }
 
@@ -144,6 +147,35 @@ func (this *SCSQL) genInsert() {
 	this.Args = args
 }
 
+//select one
+func (this *SCSQL) genSelectOne() {
+	var wr bytes.Buffer
+	entity := this.Entity
+	table := this.Table
+	columns := table.Columns()
+	sft := &sift{stype: this.S_TYPE}
+	wr.WriteString(SELECTD)
+	wr.WriteString(SPACE)
+	for i, v := range columns {
+		if i > 0 {
+			wr.WriteString(",")
+		}
+		field := entity.Field(v)
+		sft.genExp(v, field)
+		wr.WriteString("t.")
+		wr.WriteString(v)
+	}
+	wr.WriteString(SPACE)
+	wr.WriteString(FROM)
+	wr.WriteString(SPACE)
+	wr.WriteString(table.TableName())
+	wr.WriteString(SPACE)
+	wr.WriteString("t")
+	_, sftSql, vals := sft.genSiftSql()
+	this.sql = wr.String() + sftSql
+	this.Args = vals
+}
+
 //select
 func (this *SCSQL) genSelect() {
 	var wr bytes.Buffer
@@ -151,9 +183,9 @@ func (this *SCSQL) genSelect() {
 
 	table := this.Table
 	columns := table.Columns()
+	sft := &sift{stype: this.S_TYPE}
 	wr.WriteString(SELECTD)
 	wr.WriteString(SPACE)
-	sft := &sift{stype: this.S_TYPE}
 	for i, v := range columns {
 		if i > 0 {
 			wr.WriteString(",")

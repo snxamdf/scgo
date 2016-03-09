@@ -85,6 +85,51 @@ func (this *Repository) Execute(sql string, args ...interface{}) {
 
 }
 
+func (this *Repository) SelectOne(entity data.EntityInterface) error {
+	table := entity.Table()
+	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), S_TYPE: scsql.SC_S_ONE, Table: table, Entity: entity}
+	csql.ParseSQL()
+
+	stmt, err := this.Prepare(csql)
+	if err != nil {
+		log.Println("error stmt", err)
+		return err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(csql.Args...)
+	if err != nil {
+		log.Println("error rows", err)
+		return err
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		log.Println("error cols", err)
+		return err
+	}
+
+	colsLen := len(cols)
+
+	for rows.Next() {
+		vals := make([]interface{}, colsLen)
+		for i := 0; i < colsLen; i++ {
+			colm := cols[i]
+			if field := entity.Field(colm); field != nil {
+				vals[i] = field.Pointer()
+			}
+		}
+		err = rows.Scan(vals...)
+		if err != nil {
+			log.Println("error", err)
+			return err
+		}
+		return nil
+	}
+	return nil
+}
+
 func (this *Repository) Select(entityBean data.EntityBeanInterface) error {
 	table := entityBean.Table()
 	entity := entityBean.Entity()
@@ -96,21 +141,21 @@ func (this *Repository) Select(entityBean data.EntityBeanInterface) error {
 
 	stmt, err := this.Prepare(csql)
 	if err != nil {
-		log.Println("error", err)
+		log.Println("error stmt", err)
 		return err
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(csql.Args...)
 	if err != nil {
-		log.Println("error", err)
+		log.Println("error rows", err)
 		return err
 	}
 	defer rows.Close()
 
 	cols, err := rows.Columns()
 	if err != nil {
-		log.Println("error", err)
+		log.Println("error cols", err)
 		return err
 	}
 
@@ -128,7 +173,7 @@ func (this *Repository) Select(entityBean data.EntityBeanInterface) error {
 		}
 		err = rows.Scan(vals...)
 		if err != nil {
-			log.Println("error", err)
+			log.Println("error scan", err)
 			return err
 		}
 		beans.Add(bean)
