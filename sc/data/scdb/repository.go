@@ -7,13 +7,22 @@ import (
 )
 
 type RepositoryInterface interface {
+	//返回db
 	DB() *sql.DB
+	//保存对象,参数 : entity data.EntityInterface
 	Save(entity data.EntityInterface) (sql.Result, error)
+	//修改对象,参数 : entity data.EntityInterface
 	Update(entity data.EntityInterface) (sql.Result, error)
+	//保存或修改对象,参数 : entity data.EntityInterface
 	SaveOrUpdate(entity data.EntityInterface) (sql.Result, error)
+	//查询多条,参数 : entity data.EntityBeanInterface
 	Select(entityBean data.EntityBeanInterface) error
+	//查询一条,参数 : entity data.EntityInterface
 	SelectOne(entity data.EntityInterface) error
-	Delete(entity data.EntityInterface)
+	//删除,参数 : entity data.EntityInterface
+	Delete(entity data.EntityInterface) (sql.Result, error)
+	//执行自定义DML语言. (DDL,DCL待添加)
 	Execute(sql string, args ...interface{})
+	//语句解析
 	Prepare(csql scsql.SCSQL) (*sql.Stmt, error)
 }

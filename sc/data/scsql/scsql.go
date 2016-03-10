@@ -2,6 +2,8 @@ package scsql
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"log"
 	"scgo/sc/data"
 	"scgo/sc/tools"
@@ -34,6 +36,10 @@ const (
 	PARENTHESESL_R = ")"
 )
 
+var (
+	NOT_SIFT_CORT = "字段 %s 未设置连接符号,使用方式:field.FieldExp().Eq().And() 或 FieldExpVal('值').Eq().And(), 有 And() 或 Or() 等!"
+)
+
 type SCSQL struct {
 	S_TYPE       int                   //当前想要执行的操作
 	sql          string                //生成的sql
@@ -45,18 +51,19 @@ type SCSQL struct {
 }
 
 //Parse SQL
-func (this *SCSQL) ParseSQL() {
+func (this *SCSQL) ParseSQL() error {
 	if this.S_TYPE == SC_I { //insert
 		this.genInsert()
 	} else if this.S_TYPE == SC_D { //delete
-		this.genDelete()
+		return this.genDelete()
 	} else if this.S_TYPE == SC_U { //update
-		this.genUpdate()
+		return this.genUpdate()
 	} else if this.S_TYPE == SC_S { //select
-		this.genSelect()
+		return this.genSelect()
 	} else if this.S_TYPE == SC_S_ONE { //select one
-		this.genSelectOne()
+		return this.genSelectOne()
 	}
+	return nil
 }
 
 //Primary Key Is Blank
@@ -74,38 +81,46 @@ func (this *SCSQL) PrimaryKeyIsBlank() bool {
 }
 
 //delete
-func (this *SCSQL) genDelete() {
+func (this *SCSQL) genDelete() error {
 	var wr bytes.Buffer
 	entity := this.Entity
 	table := this.Table
 	columns := table.Columns()
-	wr.WriteString(DELETED + SPACE + table.TableName() + SPACE + WHERE + SPACE)
-	for i, v := range columns {
+	wr.WriteString(DELETED + SPACE + FROM + SPACE + table.TableName())
+	sft := &sift{stype: this.S_TYPE}
+	for _, v := range columns {
 		field := entity.Field(v)
-		if i > 0 {
+		_, ctor := sft.genExp(v, field)
+		if ctor {
+			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
 		}
-		log.Println(field)
 	}
+	_, sftSql, vals := sft.genSiftSql()
+	this.sql = wr.String() + sftSql
+	this.Args = vals
+	return nil
 }
 
 //update
-func (this *SCSQL) genUpdate() {
+func (this *SCSQL) genUpdate() error {
 	var wr bytes.Buffer
 	entity := this.Entity
 	table := this.Table
 	columns := table.Columns()
 	args := make([]interface{}, 0, len(columns))
-	wr.WriteString(UPDATE + SPACE + table.TableName() + " t " + SET + SPACE)
+	wr.WriteString(UPDATE + SPACE + table.TableName() + SPACE + SET + SPACE)
 	sft := &sift{stype: this.S_TYPE}
 	var i int
 	for _, v := range columns {
 		field := entity.Field(v)
-		sft.genExp(v, field)
-		if !field.PrimaryKey() && !field.FieldExp().IsSet() && tools.IsNotBlank(field.Value()) {
+		sift, ctor := sft.genExp(v, field)
+		if ctor {
+			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
+		} else if (!field.PrimaryKey() && !field.FieldExp().IsSet() && tools.IsNotBlank(field.Value())) || sift {
 			if i > 0 {
 				wr.WriteString(", ")
 			}
-			wr.WriteString("t." + v + " = ?")
+			wr.WriteString(v + " = ?")
 			args = append(args, field.Value())
 			i++
 		}
@@ -114,6 +129,7 @@ func (this *SCSQL) genUpdate() {
 	args = append(args, vals...)
 	this.sql = wr.String() + sftSql
 	this.Args = args
+	return nil
 }
 
 //insert
@@ -148,7 +164,7 @@ func (this *SCSQL) genInsert() {
 }
 
 //select one
-func (this *SCSQL) genSelectOne() {
+func (this *SCSQL) genSelectOne() error {
 	var wr bytes.Buffer
 	entity := this.Entity
 	table := this.Table
@@ -161,8 +177,10 @@ func (this *SCSQL) genSelectOne() {
 			wr.WriteString(",")
 		}
 		field := entity.Field(v)
-		sft.genExp(v, field)
-		wr.WriteString("t.")
+		_, ctor := sft.genExp(v, field)
+		if ctor {
+			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
+		}
 		wr.WriteString(v)
 	}
 	wr.WriteString(SPACE)
@@ -170,14 +188,14 @@ func (this *SCSQL) genSelectOne() {
 	wr.WriteString(SPACE)
 	wr.WriteString(table.TableName())
 	wr.WriteString(SPACE)
-	wr.WriteString("t")
 	_, sftSql, vals := sft.genSiftSql()
 	this.sql = wr.String() + sftSql
 	this.Args = vals
+	return nil
 }
 
 //select
-func (this *SCSQL) genSelect() {
+func (this *SCSQL) genSelect() error {
 	var wr bytes.Buffer
 	entity := this.Entity
 
@@ -191,8 +209,11 @@ func (this *SCSQL) genSelect() {
 			wr.WriteString(",")
 		}
 		field := entity.Field(v)
+		_, ctor := sft.genExp(v, field)
+		if ctor {
+			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
+		}
 		sft.genExp(v, field)
-		wr.WriteString("t.")
 		wr.WriteString(v)
 	}
 	wr.WriteString(SPACE)
@@ -200,10 +221,10 @@ func (this *SCSQL) genSelect() {
 	wr.WriteString(SPACE)
 	wr.WriteString(table.TableName())
 	wr.WriteString(SPACE)
-	wr.WriteString("t")
 	_, sftSql, vals := sft.genSiftSql()
 	this.sql = wr.String() + sftSql
 	this.Args = vals
+	return nil
 }
 
 type sift struct {
@@ -212,12 +233,13 @@ type sift struct {
 }
 
 //exp return exp ctor
-func (this *sift) genExp(column string, field data.EntityField) {
+//return bool:sift,bool:ctor, sift不使用原有的字段，ctor未设置连接符
+func (this *sift) genExp(column string, field data.EntityField) (bool, bool) {
 	fieldExp := field.FieldExp()
 	if fieldExp.IsSet() && tools.IsNotBlank(field.Value()) {
-		value := fieldExp.Value()
-		exp := fieldExp.Exp()
-		ctor := fieldExp.Ctor().Value()
+		value := fieldExp.Value()       //比较值
+		exp := fieldExp.Exp()           //比较符
+		ctor := fieldExp.Ctor().Value() //连接符
 		ctorLen := len(ctor)
 		for i, v := range value {
 			if i <= ctorLen {
@@ -229,15 +251,22 @@ func (this *sift) genExp(column string, field data.EntityField) {
 				this.sifts = append(this.sifts, sft)
 			}
 		}
-		if ctorLen == 1 {
+		//if ctorLen == 1 {
+		//调用FieldExp()为0,FieldExpVal("值")为1
+		if len(value) == 0 && ctorLen == 1 {
 			sft := make([]string, 4)
 			sft[0] = column
 			sft[1] = exp[0]
 			sft[2] = field.Value()
 			sft[3] = ctor[0]
 			this.sifts = append(this.sifts, sft)
+			return false, false
+		} else if ctorLen == 0 {
+			this.sifts = [][]string{}
+			return false, true
 		}
 	}
+	return true, false
 }
 
 //gen exp sift sql
@@ -265,7 +294,7 @@ func (this *sift) genSiftSql() (bool, string, []interface{}) {
 			args = append(args, v[2])
 			break
 		}
-		wr.WriteString(ctor + SPACE + "t." + v[0] + SPACE + whe + SPACE + "?" + SPACE)
+		wr.WriteString(ctor + SPACE + v[0] + SPACE + whe + SPACE + "?" + SPACE)
 		ctor = v[3]
 	}
 	if tools.IsNotBlank(wr.String()) {

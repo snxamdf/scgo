@@ -30,7 +30,10 @@ func (this *Repository) Save(entity data.EntityInterface) (sql.Result, error) {
 	} else {
 		csql.S_TYPE = scsql.SC_I
 	}
-	csql.ParseSQL()
+	err := csql.ParseSQL()
+	if err != nil {
+		return nil, err
+	}
 
 	stmt, err := this.Prepare(csql)
 	if err != nil {
@@ -50,7 +53,10 @@ func (this *Repository) Save(entity data.EntityInterface) (sql.Result, error) {
 func (this *Repository) Update(entity data.EntityInterface) (sql.Result, error) {
 	table := entity.Table()
 	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), Table: table, S_TYPE: scsql.SC_U, Entity: entity}
-	csql.ParseSQL()
+	err := csql.ParseSQL()
+	if err != nil {
+		return nil, err
+	}
 
 	stmt, err := this.Prepare(csql)
 	if err != nil {
@@ -69,7 +75,7 @@ func (this *Repository) Update(entity data.EntityInterface) (sql.Result, error) 
 
 func (this *Repository) SaveOrUpdate(entity data.EntityInterface) (sql.Result, error) {
 	table := entity.Table()
-	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), Table: table, Entity: entity}
+	csql := scsql.SCSQL{Table: table, Entity: entity}
 	if csql.PrimaryKeyIsBlank() {
 		return this.Update(entity)
 	} else {
@@ -77,18 +83,35 @@ func (this *Repository) SaveOrUpdate(entity data.EntityInterface) (sql.Result, e
 	}
 }
 
-func (this *Repository) Delete(entity data.EntityInterface) {
+func (this *Repository) Delete(entity data.EntityInterface) (sql.Result, error) {
+	table := entity.Table()
+	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), Table: table, S_TYPE: scsql.SC_D, Entity: entity}
+	err := csql.ParseSQL()
+	if err != nil {
+		return nil, err
+	}
+	stmt, err := this.Prepare(csql)
+	if err != nil {
+		log.Println("error", err)
+		return nil, err
+	}
+	defer stmt.Close()
 
+	result, err := stmt.Exec(csql.Args...)
+	if err != nil {
+		log.Println("error", err)
+		return nil, err
+	}
+	return result, nil
 }
-
-func (this *Repository) Execute(sql string, args ...interface{}) {
-
-}
-
 func (this *Repository) SelectOne(entity data.EntityInterface) error {
 	table := entity.Table()
 	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), S_TYPE: scsql.SC_S_ONE, Table: table, Entity: entity}
-	csql.ParseSQL()
+	err := csql.ParseSQL()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	stmt, err := this.Prepare(csql)
 	if err != nil {
@@ -137,7 +160,11 @@ func (this *Repository) Select(entityBean data.EntityBeanInterface) error {
 		entity = entityBean.NewEntity()
 	}
 	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), S_TYPE: scsql.SC_S, Table: table, Entity: entity}
-	csql.ParseSQL()
+	err := csql.ParseSQL()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	stmt, err := this.Prepare(csql)
 	if err != nil {
@@ -180,6 +207,11 @@ func (this *Repository) Select(entityBean data.EntityBeanInterface) error {
 	}
 	entityBean.SetEntitys(beans)
 	return nil
+}
+
+//执行自定义DML语言. (DDL,DCL待添加)
+func (this *Repository) Execute(sql string, args ...interface{}) {
+
 }
 
 func (this *Repository) Prepare(csql scsql.SCSQL) (*sql.Stmt, error) {
