@@ -154,6 +154,17 @@ func (this *Repository) SelectOne(entity data.EntityInterface) error {
 	return nil
 }
 
+//分页数量,参数 : entity data.EntityInterface
+func (this *Repository) SelectCount(entity data.EntityInterface) (int, error) {
+	table := entity.Table()
+	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), S_TYPE: scsql.SC_S_COUNT, Table: table, Entity: entity}
+	err := csql.ParseSQL()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+}
+
 func (this *Repository) SelectPage(entityBean data.EntityBeanInterface, page *data.Page) error {
 	table := entityBean.Table()
 	entity := entityBean.Entity()

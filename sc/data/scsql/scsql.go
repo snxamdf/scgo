@@ -14,12 +14,13 @@ import (
 )
 
 const (
-	SC_I      = 0
-	SC_D      = 1
-	SC_U      = 2
-	SC_S      = 3
-	SC_S_ONE  = 4
-	SC_S_PAGE = 5
+	SC_I       = 0
+	SC_D       = 1
+	SC_U       = 2
+	SC_S       = 3
+	SC_S_ONE   = 4
+	SC_S_PAGE  = 5
+	SC_S_COUNT = 6
 
 	SELECTD        = "select"
 	FROM           = "from"
@@ -70,6 +71,8 @@ func (this *SCSQL) ParseSQL() error {
 		return this.genSelectOne()
 	} else if this.S_TYPE == SC_S_PAGE { //select page
 		return this.genSelectPage()
+	} else if this.S_TYPE == SC_S_COUNT { //select count
+
 	}
 	return nil
 }
@@ -169,6 +172,37 @@ func (this *SCSQL) genInsert() {
 	wr.WriteString(VALUES + PARENTHESESL_L + wrval.String() + PARENTHESESL_R + SPACE)
 	this.sql = wr.String()
 	this.Args = args
+}
+
+//select one
+func (this *SCSQL) genSelectCount() error {
+	var wr bytes.Buffer
+	entity := this.Entity
+	table := this.Table
+	columns := table.Columns()
+	sft := &sift{stype: this.S_TYPE}
+	wr.WriteString(SELECTD)
+	wr.WriteString(SPACE)
+	for i, v := range columns {
+		if i > 0 {
+			wr.WriteString(",")
+		}
+		field := entity.Field(v)
+		_, ctor := sft.genExp(v, field)
+		if ctor {
+			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
+		}
+		wr.WriteString(v)
+	}
+	wr.WriteString(SPACE)
+	wr.WriteString(FROM)
+	wr.WriteString(SPACE)
+	wr.WriteString(table.TableName())
+	wr.WriteString(SPACE)
+	sftSql, vals := sft.genSiftSql()
+	this.sql = wr.String() + sftSql
+	this.Args = vals
+	return nil
 }
 
 //select one

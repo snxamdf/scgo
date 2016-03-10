@@ -85,3 +85,10 @@ func (c *Context) Redirect(url string, status ...int) {
 	}
 	http.Redirect(c.Response, c.Request, url, code)
 }
+
+//Page
+func (c *Context) Page() *data.Page {
+	page := &data.Page{}
+
+	return page
+}
