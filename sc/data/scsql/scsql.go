@@ -8,15 +8,18 @@ import (
 	"scgo/sc/data"
 	"scgo/sc/tools"
 	"scgo/sc/tools/uuid"
+	"sort"
+	"strconv"
 	"strings"
 )
 
 const (
-	SC_I     = 0
-	SC_D     = 1
-	SC_U     = 2
-	SC_S     = 3
-	SC_S_ONE = 4
+	SC_I      = 0
+	SC_D      = 1
+	SC_U      = 2
+	SC_S      = 3
+	SC_S_ONE  = 4
+	SC_S_PAGE = 5
 
 	SELECTD        = "select"
 	FROM           = "from"
@@ -34,6 +37,8 @@ const (
 	SPACE          = " "
 	PARENTHESESL_L = "("
 	PARENTHESESL_R = ")"
+	ASTERISK       = "*"
+	LIMIT          = "limit"
 )
 
 var (
@@ -48,6 +53,7 @@ type SCSQL struct {
 	Entity       data.EntityInterface  //实体
 	Table        data.TableInformation //表信息
 	DataBaseType string                //数据库类型 mysql、oracle ...
+	Page         *data.Page
 }
 
 //Parse SQL
@@ -62,6 +68,8 @@ func (this *SCSQL) ParseSQL() error {
 		return this.genSelect()
 	} else if this.S_TYPE == SC_S_ONE { //select one
 		return this.genSelectOne()
+	} else if this.S_TYPE == SC_S_PAGE { //select page
+		return this.genSelectPage()
 	}
 	return nil
 }
@@ -95,8 +103,8 @@ func (this *SCSQL) genDelete() error {
 			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
 		}
 	}
-	_, sftSql, vals := sft.genSiftSql()
-	this.sql = wr.String() + sftSql
+	sftSql, vals := sft.genSiftSql()
+	this.sql = wr.String() + SPACE + sftSql
 	this.Args = vals
 	return nil
 }
@@ -125,9 +133,9 @@ func (this *SCSQL) genUpdate() error {
 			i++
 		}
 	}
-	_, sftSql, vals := sft.genSiftSql()
+	sftSql, vals := sft.genSiftSql()
 	args = append(args, vals...)
-	this.sql = wr.String() + sftSql
+	this.sql = wr.String() + SPACE + sftSql
 	this.Args = args
 	return nil
 }
@@ -188,8 +196,47 @@ func (this *SCSQL) genSelectOne() error {
 	wr.WriteString(SPACE)
 	wr.WriteString(table.TableName())
 	wr.WriteString(SPACE)
-	_, sftSql, vals := sft.genSiftSql()
+	sftSql, vals := sft.genSiftSql()
 	this.sql = wr.String() + sftSql
+	this.Args = vals
+	return nil
+}
+
+//select
+func (this *SCSQL) genSelectPage() error {
+	var wr bytes.Buffer
+	entity := this.Entity
+	table := this.Table
+	columns := table.Columns()
+	page := this.Page
+	sft := &sift{stype: this.S_TYPE}
+	wr.WriteString(SELECTD)
+	wr.WriteString(SPACE)
+	for i, v := range columns {
+		if i > 0 {
+			wr.WriteString(",")
+		}
+		field := entity.Field(v)
+		_, ctor := sft.genExp(v, field)
+		if ctor {
+			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
+		}
+		wr.WriteString(v)
+	}
+	wr.WriteString(SPACE)
+	wr.WriteString(FROM)
+	wr.WriteString(SPACE)
+	wr.WriteString(table.TableName())
+	wr.WriteString(SPACE)
+	sftSql, vals := sft.genSiftSql()
+	log.Println(page)
+	var pl bytes.Buffer
+	if this.DataBaseType == data.DATA_BASE_MYSQL {
+		pl.WriteString(LIMIT + SPACE + fmt.Sprint(page.FirstResult, ",", page.MaxResults))
+	} else if this.DataBaseType == data.DATA_BASE_ORACLE {
+
+	}
+	this.sql = wr.String() + sftSql + pl.String()
 	this.Args = vals
 	return nil
 }
@@ -213,7 +260,6 @@ func (this *SCSQL) genSelect() error {
 		if ctor {
 			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
 		}
-		sft.genExp(v, field)
 		wr.WriteString(v)
 	}
 	wr.WriteString(SPACE)
@@ -221,7 +267,7 @@ func (this *SCSQL) genSelect() error {
 	wr.WriteString(SPACE)
 	wr.WriteString(table.TableName())
 	wr.WriteString(SPACE)
-	_, sftSql, vals := sft.genSiftSql()
+	sftSql, vals := sft.genSiftSql()
 	this.sql = wr.String() + sftSql
 	this.Args = vals
 	return nil
@@ -230,13 +276,23 @@ func (this *SCSQL) genSelect() error {
 type sift struct {
 	sifts [][]string
 	stype int
+	sort  [][]string
 }
 
 //exp return exp ctor
 //return bool:sift,bool:ctor, sift不使用原有的字段，ctor未设置连接符
 func (this *sift) genExp(column string, field data.EntityField) (bool, bool) {
 	fieldExp := field.FieldExp()
-	if fieldExp.IsSet() && tools.IsNotBlank(field.Value()) {
+	fieldSort := field.FieldSort()
+	if fieldSort.IsSet() {
+		log.Println(column, fieldSort.Value())
+		sort := make([]string, 3)
+		sort[0] = column
+		sort[1] = fieldSort.Value()
+		sort[2] = strconv.Itoa(fieldSort.Index())
+		this.sort = append(this.sort, sort)
+	}
+	if fieldExp.IsSet() {
 		value := fieldExp.Value()       //比较值
 		exp := fieldExp.Exp()           //比较符
 		ctor := fieldExp.Ctor().Value() //连接符
@@ -269,13 +325,19 @@ func (this *sift) genExp(column string, field data.EntityField) (bool, bool) {
 	return true, false
 }
 
+//排序
+func (this *sift) genSort() {
+	sort.Sort(this)
+}
+
 //gen exp sift sql
-func (this *sift) genSiftSql() (bool, string, []interface{}) {
+func (this *sift) genSiftSql() (string, []interface{}) {
+	this.genSort()
 	var wr bytes.Buffer
 	args := make([]interface{}, 0, 1)
 	var ctor string
 	var val, whe string
-	for _, v := range this.sifts {
+	for i, v := range this.sifts {
 		switch v[1] {
 		case data.EXP_LK, data.EXP_LK_R, data.EXP_LK_L:
 			whe = "like"
@@ -294,17 +356,55 @@ func (this *sift) genSiftSql() (bool, string, []interface{}) {
 			args = append(args, v[2])
 			break
 		}
-		wr.WriteString(ctor + SPACE + v[0] + SPACE + whe + SPACE + "?" + SPACE)
+		if i > 0 {
+			wr.WriteString(SPACE)
+		}
+		wr.WriteString(ctor + SPACE + v[0] + SPACE + whe + SPACE + "?")
 		ctor = v[3]
 	}
-	if tools.IsNotBlank(wr.String()) {
-		return true, SPACE + WHERE + wr.String(), args
+	var order bytes.Buffer
+	for i, v := range this.sort {
+		if i > 0 {
+			order.WriteString(", ")
+		}
+		order.WriteString(v[0] + SPACE + v[1])
 	}
-	return false, "", args
+	var res string
+	if tools.IsNotBlank(wr.String()) {
+		res = WHERE + wr.String() + SPACE
+	}
+	if tools.IsNotBlank(order.String()) {
+		res = res + ORDER + SPACE + BY + SPACE + order.String() + SPACE
+	}
+	return res, args
 }
 
 //sql
 func (this *SCSQL) SQL() string {
 	log.Println("SQL :", this.sql, "ARGS :", this.Args)
 	return this.sql
+}
+
+func (this sift) Len() int {
+	return len(this.sort)
+}
+
+func (this sift) Less(i, j int) bool {
+	is := this.sort[i]
+	js := this.sort[j]
+	ii := tools.ParseInteger(is[2])
+	ji := tools.ParseInteger(js[2])
+	if ii < ji {
+		return true
+	} else if ii > ji {
+		return false
+	} else {
+		return is[0] < js[0]
+	}
+}
+
+func (this sift) Swap(i, j int) {
+	temp := this.sort[i]
+	this.sort[i] = this.sort[j]
+	this.sort[j] = temp
 }

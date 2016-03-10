@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -15,4 +16,9 @@ func IsNotBlank(s string) bool {
 		return true
 	}
 	return false
+}
+
+func ParseInteger(v string) int {
+	s, _ := strconv.Atoi(v)
+	return s
 }

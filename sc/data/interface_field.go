@@ -14,6 +14,8 @@ const (
 	EXP_IN       = "in"
 	EXP_Buckle_R = "("
 	EXP_Buckle_L = ")"
+	SORT_ASC     = "asc"
+	SORT_DESC    = "desc"
 )
 
 //------------------interface begin-------------------------------
@@ -26,9 +28,11 @@ type EntityField interface {
 	PrimaryKey() bool
 	FieldExp() *FieldExpression
 	FieldExpVal(value string) *FieldExpression
+	FieldSort() *FieldSort
 }
 
 //------------------ begin-------------------------------
+//字段表达式
 type FieldExpression struct {
 	value []string
 	exp   []string
@@ -36,9 +40,41 @@ type FieldExpression struct {
 	ctor  *FieldConnector
 }
 
+//字段连接符
 type FieldConnector struct {
 	b     bool
 	value []string
+}
+
+//字段排序
+type FieldSort struct {
+	value string
+	b     bool
+	index int
+}
+
+func (this *FieldSort) Asc(index int) {
+	this.b = true
+	this.value = SORT_ASC
+	this.index = index
+}
+
+func (this *FieldSort) Desc(index int) {
+	this.b = true
+	this.value = SORT_DESC
+	this.index = index
+}
+
+func (this *FieldSort) Value() string {
+	return this.value
+}
+
+func (this *FieldSort) Index() int {
+	return this.index
+}
+
+func (this *FieldSort) IsSet() bool {
+	return this.b
 }
 
 //and

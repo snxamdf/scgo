@@ -6,6 +6,7 @@ type Integer struct {
 	value      string
 	primaryKey bool
 	exp        *FieldExpression
+	sort       *FieldSort
 }
 
 func (this *Integer) SetValue(value string) {
@@ -50,6 +51,13 @@ func (this *Integer) FieldExpVal(value string) *FieldExpression {
 	this.FieldExp()
 	this.exp.value = append(this.exp.value, value)
 	return this.exp
+}
+
+func (this *Integer) FieldSort() *FieldSort {
+	if this.sort == nil {
+		this.sort = &FieldSort{}
+	}
+	return this.sort
 }
 
 //------------------Integer end-------------------------------

@@ -104,6 +104,7 @@ func (this *Repository) Delete(entity data.EntityInterface) (sql.Result, error) 
 	}
 	return result, nil
 }
+
 func (this *Repository) SelectOne(entity data.EntityInterface) error {
 	table := entity.Table()
 	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), S_TYPE: scsql.SC_S_ONE, Table: table, Entity: entity}
@@ -153,6 +154,22 @@ func (this *Repository) SelectOne(entity data.EntityInterface) error {
 	return nil
 }
 
+func (this *Repository) SelectPage(entityBean data.EntityBeanInterface, page *data.Page) error {
+	table := entityBean.Table()
+	entity := entityBean.Entity()
+	if entity == nil {
+		entity = entityBean.NewEntity()
+	}
+	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), S_TYPE: scsql.SC_S_PAGE, Table: table, Entity: entity, Page: page}
+	err := csql.ParseSQL()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return this.selected(csql, entityBean)
+}
+
 func (this *Repository) Select(entityBean data.EntityBeanInterface) error {
 	table := entityBean.Table()
 	entity := entityBean.Entity()
@@ -166,6 +183,10 @@ func (this *Repository) Select(entityBean data.EntityBeanInterface) error {
 		return err
 	}
 
+	return this.selected(csql, entityBean)
+}
+
+func (this *Repository) selected(csql scsql.SCSQL, entityBean data.EntityBeanInterface) error {
 	stmt, err := this.Prepare(csql)
 	if err != nil {
 		log.Println("error stmt", err)

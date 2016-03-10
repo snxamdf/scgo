@@ -17,6 +17,8 @@ type RepositoryInterface interface {
 	SaveOrUpdate(entity data.EntityInterface) (sql.Result, error)
 	//查询多条,参数 : entity data.EntityBeanInterface
 	Select(entityBean data.EntityBeanInterface) error
+	//分页查询,参数 : entity data.EntityBeanInterface
+	SelectPage(entityBean data.EntityBeanInterface, page *data.Page) error
 	//查询一条,参数 : entity data.EntityInterface
 	SelectOne(entity data.EntityInterface) error
 	//删除,参数 : entity data.EntityInterface

@@ -78,6 +78,10 @@ func (this *{{.Name}}s) Values() []*{{.Name}} {
 	return this.datas
 }
 
+func (this *{{.Name}}s) Table() data.TableInformation {
+	return messageTableInformation
+}
+
 func (this *{{.Name}}s) JSON() string {
 	var wr bytes.Buffer
 	wr.WriteString("[")

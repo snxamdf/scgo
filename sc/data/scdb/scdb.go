@@ -3,11 +3,7 @@ package scdb
 import (
 	"database/sql"
 	"log"
-)
-
-const (
-	DATA_BASE_MYSQL  = "mysql"
-	DATA_BASE_ORACLE = "oracle"
+	"scgo/sc/data"
 )
 
 type DBSourceInterface interface {
@@ -47,7 +43,7 @@ func (this *Config) MySqlInit() error {
 	db.SetMaxIdleConns(this.MaxIdleConns)
 	db.SetMaxOpenConns(this.MaxOpenConns)
 	this.Db = db
-	this.dataBaseType = DATA_BASE_MYSQL
+	this.dataBaseType = data.DATA_BASE_MYSQL
 	return nil
 }
 
@@ -66,6 +62,6 @@ func (this *Config) OracleInit() error {
 	db.SetMaxIdleConns(this.MaxIdleConns)
 	db.SetMaxOpenConns(this.MaxOpenConns)
 	this.Db = db
-	this.dataBaseType = DATA_BASE_ORACLE
+	this.dataBaseType = data.DATA_BASE_ORACLE
 	return nil
 }
