@@ -22,6 +22,7 @@ func (this *StaticRoute) init(w http.ResponseWriter, r *http.Request) {
 		staticRoute = &StaticRoute{
 			handle: http.StripPrefix(Conf.Static.Prefix, http.FileServer(http.Dir(Conf.Static.Dir))),
 		}
+
 	}
 	staticRoute.ServeHTTP(w, r)
 }

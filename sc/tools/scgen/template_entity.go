@@ -44,8 +44,19 @@ func (this *{{.Name}}Bean) Entitys() data.EntitysInterface {
 	return this.beans
 }
 
+func (this *{{.Name}}Bean) Datas() *{{.Name}}s {
+	if this.beans == nil {
+		return nil
+	}
+	return this.beans
+}
+
 func (this *{{.Name}}Bean) Table() data.TableInformation {
 	return {{lower .Name}}TableInformation
+}
+
+func (this *{{.Name}}Bean) FieldNames() data.FieldNames {
+	return {{lower .Name}}FieldNames
 }
 
 func (this *{{.Name}}Bean) SetEntity(bean data.EntityInterface) {
@@ -60,13 +71,13 @@ func (this *{{.Name}}Bean) SetEntitys(beans data.EntitysInterface) {
 
 //------------------------------------------------------------
 type {{.Name}}s struct {
-	datas []*{{.Name}}
+	datas []data.EntityInterface
 	page  *data.Page
 }
 
 func New{{.Name}}s(cap int) *{{.Name}}s {
 	e := &{{.Name}}s{}
-	e.datas = make([]*{{.Name}}, 0, cap)
+	e.datas = make([]data.EntityInterface, 0, cap)
 	return e
 }
 
@@ -78,12 +89,24 @@ func (this *{{.Name}}s) Add(e data.EntityInterface) {
 	this.datas = append(this.datas, e.(*{{.Name}}))
 }
 
-func (this *{{.Name}}s) Values() []*{{.Name}} {
+func (this *{{.Name}}s) Values() []data.EntityInterface {
 	return this.datas
+}
+
+func (this *{{.Name}}s) Len() int {
+	return len(this.datas)
+}
+
+func (this *{{.Name}}s) Get(i int) *{{.Name}} {
+	return this.datas[i].(*{{.Name}})
 }
 
 func (this *{{.Name}}s) Table() data.TableInformation {
 	return {{lower .Name}}TableInformation
+}
+
+func (this *{{.Name}}s) FieldNames() data.FieldNames {
+	return {{lower .Name}}FieldNames
 }
 
 func (this *{{.Name}}s) JSON() string {
@@ -122,6 +145,10 @@ func (this *{{.Name}}) Table() data.TableInformation {
 	return {{lower .Name}}TableInformation
 }
 
+func (this *{{.Name}}) FieldNames() data.FieldNames {
+	return {{lower .Name}}FieldNames
+}
+
 func (this *{{.Name}}) Field(filedName string) data.EntityField {
 	switch filedName {
 	{{range $field:=.Fileld}}case {{if equal (lower $field.Name) (lower $field.Column.Name)}}"{{lower $field.Name}}"{{else}}"{{lower $field.Name}}"{{if isNotBlank $field.Column.Name}}, "{{lower $field.Column.Name}}"{{end}}{{end}}:
@@ -144,13 +171,18 @@ func (this *{{.Name}}) JSON() string {
 //----------------------init() end--------------------------------------
 func init() {
 	{{lower .Name}}TableInformation.SetTableName("{{.TabName}}")
-	{{lower .Name}}Columns := []string{
+	{{lower .Name}}ColumnsArr := []string{
 		{{range $field:=.Fileld}}{{$colm:=$field.Column}}{{if isNotBlank $colm.Name}}"{{$colm.Name}}", {{end}}{{end}}
 	}
-	{{lower .Name}}TableInformation.SetColumns({{lower .Name}}Columns)
+	{{lower .Name}}TableInformation.SetColumns({{lower .Name}}ColumnsArr)
+	{{lower .Name}}FieldNamesArr := []string{
+		{{range $field:=.Fileld}}"{{$field.Name}}", {{end}}
+	}
+	{{lower .Name}}FieldNames.SetNames({{lower .Name}}FieldNamesArr)
 }
 
 var {{lower .Name}}TableInformation data.TableInformation
+var {{lower .Name}}FieldNames data.FieldNames
 
 //----------------------init() end--------------------------------------
 `

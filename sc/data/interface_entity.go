@@ -7,14 +7,10 @@ type EntityBeanInterface interface {
 	SetEntity(bean EntityInterface)
 	SetEntitys(beans EntitysInterface)
 	Table() TableInformation
+	FieldNames() FieldNames
 	Entity() EntityInterface
 	Entitys() EntitysInterface
 }
-
-//分页
-//type PageInterface interface {
-//	New(pageNo, pageSize int)
-//}
 
 //单个实体
 type EntityInterface interface {
@@ -22,6 +18,7 @@ type EntityInterface interface {
 	Field(filedName string) EntityField
 	JSON() string
 	Table() TableInformation
+	FieldNames() FieldNames
 }
 
 //多个个实体
@@ -29,8 +26,26 @@ type EntitysInterface interface {
 	SetPage(page *Page)
 	Add(e EntityInterface)
 	Table() TableInformation
+	FieldNames() FieldNames
 	JSON() string
+	Len() int
+	Values() []EntityInterface
 }
+
+//------------------FieldNames begin-------------------------------
+type FieldNames struct {
+	names []string
+}
+
+func (this *FieldNames) SetNames(names []string) {
+	this.names = names
+}
+
+func (this *FieldNames) Names() []string {
+	return this.names
+}
+
+//------------------FieldNames begin-------------------------------
 
 //------------------TableInformation begin-------------------------------
 type TableInformation struct {
@@ -55,26 +70,3 @@ func (this *TableInformation) Columns() []string {
 }
 
 //------------------TableInformation begin-------------------------------
-
-//------------------Page begin-------------------------------
-//分页
-type Page struct {
-	FirstResult int //开始位置
-	MaxResults  int //查询几条
-	PageNo      int //页号
-	PageSize    int //每页数
-	Total       int //查询结果：总数量
-	TotalPage   int //查询结果：总页数
-}
-
-func (this *Page) New(pageNo, pageSize int) {
-	if pageNo <= 0 {
-		pageNo = 1
-	}
-	this.FirstResult = (pageNo - 1) * pageSize
-	this.MaxResults = pageSize
-	this.PageNo = pageNo
-	this.PageSize = pageSize
-}
-
-//------------------Page end-------------------------------

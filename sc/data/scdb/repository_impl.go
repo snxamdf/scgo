@@ -204,7 +204,7 @@ func (this *Repository) SelectPage(entityBean data.EntityBeanInterface, page *da
 		log.Println(err)
 		return err
 	}
-	page.Total = count
+	page.TotalRow = count
 	err = this.selected(csql, entityBean)
 	if entityBean.Entitys() != nil {
 		entityBean.Entitys().SetPage(page)
