@@ -72,7 +72,7 @@ func (this *SCSQL) ParseSQL() error {
 	} else if this.S_TYPE == SC_S_PAGE { //select page
 		return this.genSelectPage()
 	} else if this.S_TYPE == SC_S_COUNT { //select count
-
+		return this.genSelectCount()
 	}
 	return nil
 }
@@ -183,17 +183,18 @@ func (this *SCSQL) genSelectCount() error {
 	sft := &sift{stype: this.S_TYPE}
 	wr.WriteString(SELECTD)
 	wr.WriteString(SPACE)
-	for i, v := range columns {
-		if i > 0 {
-			wr.WriteString(",")
-		}
+	wr.WriteString("count(")
+	for _, v := range columns {
 		field := entity.Field(v)
 		_, ctor := sft.genExp(v, field)
 		if ctor {
 			return errors.New(fmt.Sprintf(NOT_SIFT_CORT, v))
 		}
-		wr.WriteString(v)
+		if field.PrimaryKey() {
+			wr.WriteString(v)
+		}
 	}
+	wr.WriteString(")")
 	wr.WriteString(SPACE)
 	wr.WriteString(FROM)
 	wr.WriteString(SPACE)
@@ -263,11 +264,10 @@ func (this *SCSQL) genSelectPage() error {
 	wr.WriteString(table.TableName())
 	wr.WriteString(SPACE)
 	sftSql, vals := sft.genSiftSql()
-	log.Println(page)
 	var pl bytes.Buffer
-	if this.DataBaseType == data.DATA_BASE_MYSQL {
+	if this.DataBaseType == data.DATA_BASE_MYSQL { //mysql page
 		pl.WriteString(LIMIT + SPACE + fmt.Sprint(page.FirstResult, ",", page.MaxResults))
-	} else if this.DataBaseType == data.DATA_BASE_ORACLE {
+	} else if this.DataBaseType == data.DATA_BASE_ORACLE { //oracle page
 
 	}
 	this.sql = wr.String() + sftSql + pl.String()
@@ -319,7 +319,6 @@ func (this *sift) genExp(column string, field data.EntityField) (bool, bool) {
 	fieldExp := field.FieldExp()
 	fieldSort := field.FieldSort()
 	if fieldSort.IsSet() {
-		log.Println(column, fieldSort.Value())
 		sort := make([]string, 3)
 		sort[0] = column
 		sort[1] = fieldSort.Value()

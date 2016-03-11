@@ -154,15 +154,37 @@ func (this *Repository) SelectOne(entity data.EntityInterface) error {
 	return nil
 }
 
-//分页数量,参数 : entity data.EntityInterface
 func (this *Repository) SelectCount(entity data.EntityInterface) (int, error) {
 	table := entity.Table()
 	csql := scsql.SCSQL{DataBaseType: this.dBSource.DataBaseType(), S_TYPE: scsql.SC_S_COUNT, Table: table, Entity: entity}
 	err := csql.ParseSQL()
 	if err != nil {
 		log.Println(err)
-		return err
+		return 0, err
 	}
+	stmt, err := this.Prepare(csql)
+	if err != nil {
+		log.Println("error stmt", err)
+		return 0, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(csql.Args...)
+	if err != nil {
+		log.Println("error rows", err)
+		return 0, err
+	}
+	defer rows.Close()
+	var resCount int
+	for rows.Next() {
+		err = rows.Scan(&resCount)
+		if err != nil {
+			log.Println("error", err)
+			return 0, err
+		}
+		return resCount, nil
+	}
+	return 0, nil
 }
 
 func (this *Repository) SelectPage(entityBean data.EntityBeanInterface, page *data.Page) error {
@@ -177,8 +199,17 @@ func (this *Repository) SelectPage(entityBean data.EntityBeanInterface, page *da
 		log.Println(err)
 		return err
 	}
-
-	return this.selected(csql, entityBean)
+	count, err := this.SelectCount(entity)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	page.Total = count
+	err = this.selected(csql, entityBean)
+	if entityBean.Entitys() != nil {
+		entityBean.Entitys().SetPage(page)
+	}
+	return err
 }
 
 func (this *Repository) Select(entityBean data.EntityBeanInterface) error {
@@ -220,7 +251,6 @@ func (this *Repository) selected(csql scsql.SCSQL, entityBean data.EntityBeanInt
 
 	colsLen := len(cols)
 	beans := entityBean.NewEntitys(5)
-
 	for rows.Next() {
 		vals := make([]interface{}, colsLen)
 		bean := entityBean.NewEntity()

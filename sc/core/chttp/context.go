@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"runtime/debug"
 	"scgo/sc/data"
+	"scgo/sc/tools"
 )
 
 var temp = template.Template{}
@@ -35,7 +36,10 @@ func (this *Context) BindData(entity data.EntityInterface) {
 			}
 			b.WriteString(v)
 		}
-		entity.SetValue(k, b.String())
+		field := entity.Field(k)
+		if field != nil {
+			field.SetValue(b.String())
+		}
 	}
 }
 
@@ -89,6 +93,17 @@ func (c *Context) Redirect(url string, status ...int) {
 //Page
 func (c *Context) Page() *data.Page {
 	page := &data.Page{}
-
+	var pageNo, pageSize int
+	if len(c.GetParam("pageNo")) > 0 {
+		pageNo = tools.ParseInteger(c.GetParam("pageNo")[0])
+	} else {
+		pageNo = 1
+	}
+	if len(c.GetParam("pageSize")) > 0 {
+		pageSize = tools.ParseInteger(c.GetParam("pageSize")[0])
+	} else {
+		pageSize = 10
+	}
+	page.New(pageNo, pageSize)
 	return page
 }

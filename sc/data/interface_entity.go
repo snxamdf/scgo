@@ -8,6 +8,7 @@ type EntityBeanInterface interface {
 	SetEntitys(beans EntitysInterface)
 	Table() TableInformation
 	Entity() EntityInterface
+	Entitys() EntitysInterface
 }
 
 //分页
@@ -25,8 +26,10 @@ type EntityInterface interface {
 
 //多个个实体
 type EntitysInterface interface {
+	SetPage(page *Page)
 	Add(e EntityInterface)
 	Table() TableInformation
+	JSON() string
 }
 
 //------------------TableInformation begin-------------------------------

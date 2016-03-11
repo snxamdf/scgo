@@ -19,7 +19,6 @@ type {{.Name}}Bean struct {
 
 func New{{.Name}}Bean() *{{.Name}}Bean {
 	e := &{{.Name}}Bean{}
-	//e.NewEntity()
 	return e
 }
 
@@ -38,7 +37,7 @@ func (this *{{.Name}}Bean) Entity() data.EntityInterface {
 	return this.bean
 }
 
-func (this *{{.Name}}Bean) Entitys() *{{.Name}}s {
+func (this *{{.Name}}Bean) Entitys() data.EntitysInterface {
 	if this.beans == nil {
 		return nil
 	}
@@ -62,12 +61,17 @@ func (this *{{.Name}}Bean) SetEntitys(beans data.EntitysInterface) {
 //------------------------------------------------------------
 type {{.Name}}s struct {
 	datas []*{{.Name}}
+	page  *data.Page
 }
 
 func New{{.Name}}s(cap int) *{{.Name}}s {
 	e := &{{.Name}}s{}
 	e.datas = make([]*{{.Name}}, 0, cap)
 	return e
+}
+
+func (this *{{.Name}}s) SetPage(page *data.Page) {
+	this.page = page
 }
 
 func (this *{{.Name}}s) Add(e data.EntityInterface) {
@@ -79,7 +83,7 @@ func (this *{{.Name}}s) Values() []*{{.Name}} {
 }
 
 func (this *{{.Name}}s) Table() data.TableInformation {
-	return messageTableInformation
+	return {{lower .Name}}TableInformation
 }
 
 func (this *{{.Name}}s) JSON() string {

@@ -17,11 +17,6 @@ type {{lowerFirst .Name}}Service struct {
 	repository scdb.RepositoryInterface
 }
 
-//查询多条,参数 : entity data.EntityBeanInterface
-func (this *{{lowerFirst .Name}}Service) Select(bean data.EntityBeanInterface) error {
-	return this.repository.Select(bean)
-}
-
 //保存对象,参数 : entity data.EntityInterface
 func (this *{{lowerFirst .Name}}Service) Save(entity data.EntityInterface) (sql.Result, error) {
 	return this.repository.Save(entity)
@@ -35,6 +30,21 @@ func (this *{{lowerFirst .Name}}Service) Update(entity data.EntityInterface) (sq
 //保存或修改对象,参数 : entity data.EntityInterface
 func (this *{{lowerFirst .Name}}Service) SaveOrUpdate(entity data.EntityInterface) (sql.Result, error) {
 	return this.repository.SaveOrUpdate(entity)
+}
+
+//查询多条,参数 : entity data.EntityBeanInterface
+func (this *{{lowerFirst .Name}}Service) Select(bean data.EntityBeanInterface) error {
+	return this.repository.Select(bean)
+}
+
+//分页查询,参数 : entity data.EntityBeanInterface
+func (this *{{lowerFirst .Name}}Service) SelectPage(entityBean data.EntityBeanInterface, page *data.Page) error{
+	return this.repository.SelectPage(entityBean, page)
+}
+
+//分页数量,参数 : entity data.EntityInterface
+func (this *{{lowerFirst .Name}}Service) SelectCount(entity data.EntityInterface) (int, error){
+	return this.repository.SelectCount(entity)
 }
 
 //查询一条,参数 : entity data.EntityInterface
