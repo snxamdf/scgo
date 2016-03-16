@@ -3,7 +3,8 @@ package scdb
 import (
 	"database/sql"
 	"log"
-	"scgo/sc/data"
+
+	"github.com/snxamdf/scgo/sc/data"
 )
 
 type DBSourceInterface interface {

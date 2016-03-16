@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"scgo/sc/data/scdb"
+	"github.com/snxamdf/scgo/sc/data/scdb"
 
 	_ "github.com/go-sql-driver/mysql"
 )

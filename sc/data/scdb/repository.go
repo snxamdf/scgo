@@ -2,8 +2,9 @@ package scdb
 
 import (
 	"database/sql"
-	"scgo/sc/data"
-	"scgo/sc/data/scsql"
+
+	"github.com/snxamdf/scgo/sc/data"
+	"github.com/snxamdf/scgo/sc/data/scsql"
 )
 
 type RepositoryInterface interface {

@@ -3,8 +3,9 @@ package scdb
 import (
 	"database/sql"
 	"log"
-	"scgo/sc/data"
-	"scgo/sc/data/scsql"
+
+	"github.com/snxamdf/scgo/sc/data"
+	"github.com/snxamdf/scgo/sc/data/scsql"
 )
 
 var Connection RepositoryInterface

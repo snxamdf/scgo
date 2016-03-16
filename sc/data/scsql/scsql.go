@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"scgo/sc/data"
-	"scgo/sc/tools"
-	"scgo/sc/tools/uuid"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/snxamdf/scgo/sc/data"
+	"github.com/snxamdf/scgo/sc/tools"
+	"github.com/snxamdf/scgo/sc/tools/uuid"
 )
 
 const (

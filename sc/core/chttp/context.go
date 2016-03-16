@@ -11,11 +11,12 @@ import (
 	"net/url"
 	"path/filepath"
 	"runtime/debug"
-	"scgo/sc/data"
-	"scgo/sc/tools"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/snxamdf/scgo/sc/data"
+	"github.com/snxamdf/scgo/sc/tools"
 )
 
 const (
