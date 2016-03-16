@@ -1,9 +1,12 @@
 # scgo
+
 Description
 
 README.md
 
 服务端配置
+
+go get -u github.com/snxamdf/scgo
 
 action映射
 
