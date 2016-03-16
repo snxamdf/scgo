@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<title>窗口</title>
+		<link rel="shortcut icon" type="image/ico" href="/static/favicon.ico">
+		<script type="text/javascript" src="/static/js/jquery-1.11.3.min.js"></script>
+	</head>
+	<body>
+		{{.Page}}<br/>
+		{{range .Data}}
+			{{.id}} - {{.name}} - {{.age}}<br/>
+		{{end}}
+	</body>
+</html>

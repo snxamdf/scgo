@@ -1,0 +1,2 @@
+//scgen
+package service

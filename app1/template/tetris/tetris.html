@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<title>tetris</title>
+		<link rel="shortcut icon" type="image/ico" href="/static/favicon.ico">
+		<link rel="stylesheet" href="/static/tetris/tetris.css" />
+		<script type="text/javascript" src="/static/js/jquery-1.11.3.min.js"></script>
+		<script type="text/javascript" src="/static/tetris/tetris.min.js"></script>
+	</head>
+	<body>
+		<div class="canvas">
+			<div id="canvasLeft" class="left">
+			</div>
+			<div class="right">
+				<div>
+					空格：直接到底 <br/>←：左移 <br/>↑：右旋转 <br/>→：右移 <br/>↓：快速下降一格
+				</div>
+				<div>
+					<br/>得分 : <span id="score">0</span> 分
+				</div>
+				<div id="lose1" style="display:none;">
+					<br/><h1>小同志，重新来吧，刷新页面！<h1>
+				</div>
+				<div id="next" class="next">
+				</div>
+				<br/>
+				<div id="next" class="next">
+					<input type="button" id="start" value="开始"/>
+					<input type="button" id="stop" value="停止" stat="start"/>
+				</div>
+				<br/>
+			</div>
+		</div>
+	</body>
+</html>
