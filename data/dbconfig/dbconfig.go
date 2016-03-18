@@ -1,4 +1,4 @@
-package config
+package dbconfig
 
 import (
 	"encoding/xml"
@@ -23,6 +23,7 @@ type Dbs struct {
 
 type Db struct {
 	Id           string `xml:"id,attr"`
+	DataBaseType string `xml:"dataBaseType,attr"`
 	DriverName   string `xml:"driverName"`
 	UserName     string `xml:"userName"`
 	PassWord     string `xml:"passWord"`
@@ -34,18 +35,26 @@ type Db struct {
 	MaxOpenConns int    `xml:"maxOpenConns"`
 }
 
+type DBConfigInterface interface {
+	Init()
+	DefaultDb() Db
+	Db(dbName string) Db
+	DefaultName() string
+}
+
 func (Config) Init() {
-	B = true
 	content, err := ioutil.ReadFile(Conf.FilePath)
 	if err != nil {
 		log.Println(err)
-		B = false
 	}
 	err = xml.Unmarshal(content, &Conf)
 	if err != nil {
 		log.Println(err)
-		B = false
 	}
+}
+
+func (this *Config) DefaultName() string {
+	return this.Dbs.Default
 }
 
 func (this *Config) DefaultDb() Db {

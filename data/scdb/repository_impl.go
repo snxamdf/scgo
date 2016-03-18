@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"log"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/snxamdf/scgo/data"
-	"github.com/snxamdf/scgo/data/config"
+	"github.com/snxamdf/scgo/data/dbconfig"
 	"github.com/snxamdf/scgo/data/scsql"
 )
 
@@ -15,9 +16,9 @@ type Repository struct {
 	dBSource DBSourceInterface
 }
 
-func NewRepository(dbType, dbName string) *Repository {
-	var db config.Db
-	db = config.Conf.Db(dbName)
+func NewRepository(dbName string) *Repository {
+	var db = dbconfig.Conf.Db(dbName)
+	var dbType = db.DataBaseType
 	c := &Config{
 		DriverName:   db.DriverName,
 		UserName:     db.UserName,
@@ -306,4 +307,13 @@ func (this *Repository) Prepare(csql scsql.SCSQL) (*sql.Stmt, error) {
 	var db = this.DB()
 	stmt, err := db.Prepare(csql.SQL())
 	return stmt, err
+}
+
+func init() {
+	log.Println("repository.go")
+	dbconfig.Conf = &dbconfig.Config{
+		FilePath: `conf/db.xml`,
+	}
+	dbconfig.Conf.Init()
+	Connection = NewRepository(dbconfig.Conf.Dbs.Default)
 }
