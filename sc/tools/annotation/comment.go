@@ -4,8 +4,9 @@ import (
 	"go/ast"
 	"log"
 	"regexp"
-	"scgo/sc/tools/gen"
 	"strings"
+
+	"github.com/snxamdf/scgo/sc/tools/gen"
 )
 
 //实体映射表

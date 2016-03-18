@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"log"
 	"os"
-	"scgo/sc/tools"
-	"scgo/sc/tools/annotation"
-	"scgo/sc/tools/gen"
 	"text/template"
+
+	"github.com/snxamdf/scgo/sc/tools"
+	"github.com/snxamdf/scgo/sc/tools/annotation"
+	"github.com/snxamdf/scgo/sc/tools/gen"
 )
 
 //生成实体实现类 xxxx_entity_impl.go

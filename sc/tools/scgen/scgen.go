@@ -9,8 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"scgo/sc/tools/annotation"
-	"scgo/sc/tools/gen"
+	"github.com/snxamdf/scgo/sc/tools/annotation"
+	"github.com/snxamdf/scgo/sc/tools/gen"
 )
 
 func main() {
