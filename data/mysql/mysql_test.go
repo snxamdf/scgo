@@ -3,11 +3,12 @@ package mysql_test
 import (
 	//"fmt"
 	"log"
-	//	"scgo/sc/data"
-	"scgo/sc/data/mysql"
-	"scgo/sc/data/scdb"
-	"study/app1/source/chatol/entity"
+	"study/app3/source/chatol/entity"
 	"testing"
+
+	"github.com/snxamdf/scgo/data/config"
+	"github.com/snxamdf/scgo/data/mysql"
+	"github.com/snxamdf/scgo/data/scdb"
 	//"sync"
 )
 
@@ -113,10 +114,14 @@ import (
 //}
 
 func TestMysqlSelectCount(t *testing.T) {
+	config.Conf = &config.Config{
+		FilePath: "../config/db.xml",
+	}
+	mysql.New(config.Conf)
 	var repository = scdb.Connection
 	e := entity.NewMessage()
 	e.SetAge(30)
 	e.Age().FieldExp().Gt().And()
 	c, err := repository.SelectCount(e)
-	log.Println(c, err)
+	log.Println("count=", c, err)
 }

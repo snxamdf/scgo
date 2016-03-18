@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/snxamdf/scgo/data"
+	"github.com/snxamdf/scgo/data/config"
 	"github.com/snxamdf/scgo/data/scsql"
 )
 
@@ -12,6 +13,30 @@ var Connection RepositoryInterface
 
 type Repository struct {
 	dBSource DBSourceInterface
+}
+
+func NewRepository(dbType, dbName string) *Repository {
+	var db config.Db
+	db = config.Conf.Db(dbName)
+	c := &Config{
+		DriverName:   db.DriverName,
+		UserName:     db.UserName,
+		PassWord:     db.PassWord,
+		Ip:           db.IP,
+		Prot:         db.Prot,
+		DBName:       db.Database,
+		Charset:      db.Charset,
+		MaxIdleConns: db.MaxIdleConns,
+		MaxOpenConns: db.MaxOpenConns,
+	}
+	if dbType == data.DATA_BASE_MYSQL {
+		c.MySqlInit()
+	} else if dbType == data.DATA_BASE_ORACLE {
+		c.OracleInit()
+	}
+	e := &Repository{}
+	e.SetDBSource(c)
+	return e
 }
 
 func (this *Repository) SetDBSource(dBSource DBSourceInterface) {
