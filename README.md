@@ -1,6 +1,7 @@
 # scgo
 
 Description
+
 go get github.com/snxamdf/scgo
 
 core:
