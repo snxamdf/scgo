@@ -1,17 +1,33 @@
 # scgo
 
 Description
-
-README.md
-
-服务端配置
-
 go get -u github.com/snxamdf/scgo
 
-action映射
+core:
+  action映射
+  请求数据绑定和响应数据封装
+  http模拟请求发送
 
-权限配置
-错误配置
+data:
+  数据库、缓存操作封装
+  对结构的数据转换
 
-实体数据绑定
-实体值获取
+filter:
+  过滤器配置
+
+logger:
+  日志输出
+
+security:
+  安全控制
+
+soap:
+  webservice
+
+template:
+  模版转换
+
+tools:
+  框架所有工具包
+  代码生成包
+
