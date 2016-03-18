@@ -34,7 +34,7 @@ func (this *Config) MySqlInit() error {
 		this.Charset = "UTF8"
 	}
 	var dataSource = this.UserName + ":" + this.PassWord + "@tcp(" + this.Ip + ":" + this.Prot + ")/" + this.DBName + "?charset=" + this.Charset
-	log.Println("data source {", dataSource, "}")
+	log.Println("data source [", dataSource, "]")
 	db, err := sql.Open(this.DriverName, dataSource)
 	if err != nil {
 		log.Println(err)

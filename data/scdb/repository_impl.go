@@ -310,7 +310,6 @@ func (this *Repository) Prepare(csql scsql.SCSQL) (*sql.Stmt, error) {
 }
 
 func init() {
-	log.Println("repository.go")
 	dbconfig.Conf = &dbconfig.Config{
 		FilePath: `conf/db.xml`,
 	}
