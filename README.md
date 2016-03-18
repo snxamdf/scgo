@@ -1,7 +1,7 @@
 # scgo
 
 Description
-go get -u github.com/snxamdf/scgo
+go get github.com/snxamdf/scgo
 
 core:
   action映射
@@ -30,4 +30,6 @@ template:
 tools:
   框架所有工具包
   代码生成包
+  
+代码生成示例：http://git.oschina.net/snxamdf/study
 
