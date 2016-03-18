@@ -7,9 +7,10 @@ import (
 	"go/token"
 	"log"
 	"os"
+	"strings"
+
 	"scgo/sc/tools/annotation"
 	"scgo/sc/tools/gen"
-	"strings"
 )
 
 func main() {

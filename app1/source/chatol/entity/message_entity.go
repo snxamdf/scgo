@@ -4,7 +4,7 @@ import (
 	"github.com/snxamdf/scgo/sc/data"
 )
 
-//go:generate $GOPATH/src/scgo/sc/tools/scgen/scgen.exe -fileDir=$GOFILE -projectDir=study/app1 -moduleName=chatol -goSource=source
+//go:generate $GOPATH/src/github.com/snxamdf/scgo/sc/tools/scgen/scgen.exe -fileDir=$GOFILE -projectDir=github.com/snxamdf/scgo/app1 -moduleName=chatol -goSource=source
 //go:@Table value=users
 type Message struct {
 

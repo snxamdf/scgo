@@ -1,9 +1,8 @@
 package main
 
 import (
-	_ "study/app1/source/chatol/action"
-	_ "study/app1/source/common/action"
-	_ "study/app1/source/test/action"
+	_ "github.com/snxamdf/scgo/app1/source/chatol/action"
+	_ "github.com/snxamdf/scgo/app1/source/common/action"
 
 	"github.com/snxamdf/scgo/sc/core/chttp"
 	_ "github.com/snxamdf/scgo/sc/data/mysql"

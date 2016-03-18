@@ -4,9 +4,8 @@ package entity
 import (
 	"bytes"
 	"fmt"
-	"strconv"
-
 	"github.com/snxamdf/scgo/sc/data"
+	"strconv"
 )
 
 //----------------------MessageBean begin--------------------------------------
@@ -219,11 +218,11 @@ func (this *Message) JSON() string {
 func init() {
 	messageTableInformation.SetTableName("users")
 	messageColumnsArr := []string{
-		"u_id", "u_name", "u_phone", "u_age",
+		"u_id", "u_name", "u_phone", "u_age", 
 	}
 	messageTableInformation.SetColumns(messageColumnsArr)
 	messageFieldNamesArr := []string{
-		"id", "name", "phone", "age", "tt",
+		"id", "name", "phone", "age", "tt", 
 	}
 	messageFieldNames.SetNames(messageFieldNamesArr)
 }

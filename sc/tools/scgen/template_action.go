@@ -4,7 +4,7 @@ var actionTemp = `//scgen
 package action
 
 import (
-	"scgo/sc/core/chttp"
+	"github.com/snxamdf/scgo/sc/core/chttp"
 	"{{.GenEntity.ProjectDir}}/{{.GenEntity.GoSourceDir}}/{{.GenEntity.ModuleName}}/entity"
 )
 
@@ -16,6 +16,6 @@ func init() {
 func index(c chttp.Context) {
 	e := entity.New{{.Name}}()
 	c.BindData(e)
-	c.JSON(e.JSON())
+	c.JSON(e.JSON(), true)
 }
 `
